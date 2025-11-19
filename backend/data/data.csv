@@ -1,0 +1,690 @@
+source,relation,target,weight
+前端,核心分类,初阶,10
+前端,核心分类,高阶,10
+初阶,核心模块,前端基础,10
+初阶,辅助工具,开发工具,8
+前端基础,运行环境,客户端,9
+前端基础,核心模块,网络,9
+前端基础,基础语法,HTML,10
+前端基础,基础语法,CSS,10
+前端基础,核心语言,JavaScript,10
+前端基础,行业标准,行业标准,9
+客户端,部署环境,浏览器,9
+客户端,部署环境,APP,8
+浏览器,具体实现,Chrome,8
+浏览器,具体实现,Safari,7
+浏览器,具体实现,Firefox,7
+APP,具体实现,小程序,9
+APP,技术实现,WebView,8
+网络,核心概念,Domain,8
+网络,通信协议,TCP/IP,8
+网络,核心概念,DNS,7
+网络,通信协议,HTTP,10
+前端基础,服务端,服务端,8
+服务端,服务器软件,WebServer,8
+WebServer,具体实现,Nginx,9
+WebServer,具体实现,Apache HTTP Server,7
+WebServer,技术实现,CDN,8
+服务端,开发语言,服务端语言,8
+服务端语言,具体实现,PHP,7
+服务端语言,具体实现,Java,9
+服务端语言,具体实现,Golang,8
+服务端,数据存储,数据库,8
+服务端,运行环境,操作系统,7
+行业标准,标准组织,W3C/WHATWG,9
+W3C/WHATWG,标准规范,CSS标准,9
+W3C/WHATWG,标准规范,HTML、XHTML、XML、HTML5标准,10
+W3C/WHATWG,标准规范,DOM标准,9
+W3C/WHATWG,标准规范,SVG标准,7
+W3C/WHATWG,标准规范,小程序标准,8
+行业标准,标准组织,ECMA-TC39,9
+ECMA-TC39,标准规范,ECMAScript标准,10
+ECMA-TC39,标准规范,JavaScript标准,10
+开发工具,代码编辑,编辑器,9
+编辑器,具体实现,Atom,7
+编辑器,具体实现,Visual Studio Code,10
+编辑器,具体实现,Webstorm,8
+开发工具,调试工具,调试预览,9
+调试预览,浏览器工具,浏览器调试工具,9
+浏览器调试工具,具体实现,FireBug,7
+浏览器调试工具,具体实现,Chrome DevTools,10
+调试预览,在线服务,在线服务,8
+在线服务,具体实现,CodePen,7
+在线服务,具体实现,JSFiddle,7
+开发工具,图形处理,图片编辑器,7
+图片编辑器,具体实现,PhotoShop,9
+图片编辑器,具体实现,Sketch,8
+开发工具,版本控制,版本管理,9
+版本管理,具体实现,Git,10
+版本管理,具体实现,SVN,7
+HTML,核心组成,元素,10
+元素,根元素类型,根元素,9
+根元素,具体标签,主根元素html,10
+根元素,具体标签,分区根元素body,10
+元素,元数据标签,元数据,9
+元数据,具体标签,base,7
+元数据,具体标签,head,10
+元数据,具体标签,title,9
+元数据,具体标签,meta,10
+元数据,具体标签,link,9
+元数据,具体标签,style,9
+元素,页面结构,内容分区,9
+内容分区,具体标签,header,9
+内容分区,具体标签,footer,9
+内容分区,具体标签,p,10
+内容分区,具体标签,注释,8
+内容分区,具体标签,article,8
+内容分区,具体标签,nav,9
+内容分区,具体标签,section,9
+内容分区,具体标签,address,7
+元素,内容展示,内容,8
+内容,具体标签,块级内容 div、dir,9
+内容,具体标签,文字内容 a、b、strong,9
+元素,媒体元素,图片和多媒体,9
+图片和多媒体,具体标签,video,9
+图片和多媒体,具体标签,img,10
+图片和多媒体,具体标签,figure,7
+图片和多媒体,具体标签,audio,8
+元素,嵌入内容,内嵌内容,8
+内嵌内容,具体标签,object,7
+内嵌内容,具体标签,iframe,9
+元素,脚本支持,脚本,9
+脚本,具体标签,script,10
+脚本,具体标签,noscript,7
+脚本,具体标签,canvas,9
+元素,数据展示,表格,8
+表格,具体标签,tbody,8
+表格,具体标签,table,9
+元素,交互组件,表单,10
+表单,具体标签,input,10
+表单,具体标签,textarea,9
+表单,具体标签,form,10
+表单,具体标签,button,10
+元素,交互元素,可交互元素,7
+可交互元素,具体标签,menuitem,6
+可交互元素,具体标签,menu,7
+元素,文本语义,内联文本语义,8
+内联文本语义,具体标签,a,10
+内联文本语义,具体标签,abbr,7
+内联文本语义,具体标签,b,9
+内联文本语义,具体标签,br,9
+内联文本语义,具体标签,cite,7
+内联文本语义,具体标签,code,8
+内联文本语义,具体标签,dfn,6
+内联文本语义,具体标签,em,9
+内联文本语义,具体标签,i,8
+内联文本语义,具体标签,kbd,6
+内联文本语义,具体标签,mark,7
+内联文本语义,具体标签,q,7
+内联文本语义,具体标签,s,7
+内联文本语义,具体标签,samp,6
+内联文本语义,具体标签,small,7
+内联文本语义,具体标签,span,10
+内联文本语义,具体标签,strong,9
+内联文本语义,具体标签,sub,7
+内联文本语义,具体标签,sup,7
+内联文本语义,具体标签,u,7
+内联文本语义,具体标签,var,6
+HTML,核心组成,属性,10
+属性,常用属性,常用属性,9
+常用属性,具体属性,class,10
+常用属性,具体属性,id,10
+常用属性,具体属性,style,10
+常用属性,具体属性,title,8
+属性,全局属性,全局属性,9
+全局属性,具体属性,accesskey,6
+全局属性,具体属性,class,10
+全局属性,具体属性,contenteditable,8
+全局属性,具体属性,dir,7
+全局属性,具体属性,draggable,8
+全局属性,具体属性,hidden,8
+全局属性,具体属性,id,10
+全局属性,具体属性,lang,7
+全局属性,具体属性,spellcheck,7
+全局属性,具体属性,style,10
+全局属性,具体属性,title,8
+全局属性,具体属性,tabindex,8
+全局属性,具体属性,translate,6
+HTML,事件处理,事件,9
+事件,窗口事件,窗口事件,8
+窗口事件,具体事件,load,9
+窗口事件,具体事件,unload,7
+窗口事件,具体事件,resize,8
+窗口事件,具体事件,scroll,9
+事件,表单事件,表单事件,9
+表单事件,具体事件,submit,10
+表单事件,具体事件,reset,8
+表单事件,具体事件,change,9
+表单事件,具体事件,focus,9
+表单事件,具体事件,blur,9
+事件,键盘事件,键盘事件,8
+键盘事件,具体事件,keydown,9
+键盘事件,具体事件,keyup,9
+键盘事件,具体事件,keypress,8
+事件,鼠标事件,鼠标事件,9
+鼠标事件,具体事件,click,10
+鼠标事件,具体事件,dblclick,7
+鼠标事件,具体事件,mousedown,8
+鼠标事件,具体事件,mouseup,8
+鼠标事件,具体事件,mousemove,8
+鼠标事件,具体事件,mouseover,8
+鼠标事件,具体事件,mouseout,8
+事件,媒体事件,多媒体事件,7
+多媒体事件,具体事件,play,8
+多媒体事件,具体事件,pause,8
+多媒体事件,具体事件,ended,7
+多媒体事件,具体事件,volumechange,7
+CSS,语法规则,语法,10
+语法,指令规则,@规则,9
+@规则,具体指令,@import,9
+@规则,具体指令,@charset,7
+@规则,具体指令,@media,10
+@规则,具体指令,@supports,8
+@规则,具体指令,@keyframes,9
+@规则,具体指令,@document,7
+语法,优先级规则,层叠,9
+层叠,具体规则,层叠规则,9
+层叠,具体规则,继承机制,8
+层叠,具体规则,特异性计算,8
+语法,注释规则,注释,7
+语法,解析规则,解释器,7
+语法,特性规则,继承,8
+语法,简写规则,简写,8
+语法,优先级规则,优先级,9
+语法,取值规则,值定义,8
+值定义,取值类型,关键字,8
+值定义,取值类型,数值,9
+值定义,取值类型,长度,9
+值定义,取值类型,百分比,9
+值定义,取值类型,颜色,10
+值定义,取值类型,函数,8
+语法,单位规则,单位与取值类型,9
+单位与取值类型,具体单位,绝对单位（px/in/cm）,9
+单位与取值类型,具体单位,相对单位（em/rem/%/vw/vh）,10
+单位与取值类型,具体单位,角度（deg/rad）,7
+单位与取值类型,具体单位,时间（s/ms）,8
+CSS,选择机制,选择器,10
+选择器,基础选择器,基础选择器,9
+基础选择器,具体选择器,元素选择器,10
+基础选择器,具体选择器,类选择器,10
+基础选择器,具体选择器,ID选择器,10
+基础选择器,具体选择器,通配选择器,7
+选择器,组合选择器,组合选择器,9
+组合选择器,具体选择器,后代选择器,9
+组合选择器,具体选择器,子选择器,9
+组合选择器,具体选择器,相邻兄弟选择器,8
+组合选择器,具体选择器,通用兄弟选择器,8
+选择器,伪类选择器,伪类选择器,9
+伪类选择器,具体选择器,结构伪类（:nth-child）,9
+伪类选择器,具体选择器,状态伪类（:hover/:focus）,10
+伪类选择器,具体选择器,目标伪类（:target）,7
+选择器,伪元素选择器,伪元素选择器,9
+伪元素选择器,具体选择器,::before/::after,10
+伪元素选择器,具体选择器,::first-letter/::first-line,8
+CSS,核心属性,核心属性,10
+核心属性,布局属性,布局属性,10
+布局属性,具体属性,display（block/inline-flex/grid）,10
+布局属性,具体属性,position（static/relative/absolute）,10
+布局属性,具体属性,float/clear,8
+核心属性,盒模型属性,盒模型,10
+盒模型,具体属性,width/height,10
+盒模型,具体属性,padding,10
+盒模型,具体属性,border,10
+盒模型,具体属性,margin,10
+盒模型,具体属性,box-sizing（content-box/border-box）,9
+核心属性,布局机制,视觉格式化,9
+视觉格式化,具体机制,正常流,9
+视觉格式化,具体机制,弹性盒子,10
+视觉格式化,具体机制,网格布局,9
+视觉格式化,具体机制,多列布局,8
+CSS,高级布局,高级布局,9
+高级布局,Flex布局,Flexbox布局,10
+Flexbox布局,容器属性,弹性容器属性（flex-direction/justify-content）,10
+Flexbox布局,项目属性,弹性项目属性（flex-grow/flex-shrink）,9
+高级布局,Grid布局,Grid布局,9
+Grid布局,容器属性,网格容器（grid-template-columns）,9
+Grid布局,项目属性,网格项（grid-column-start/end）,8
+高级布局,多列布局,多列布局,8
+多列布局,具体属性,column-count,8
+多列布局,具体属性,column-gap,8
+多列布局,具体属性,break-inside,7
+CSS,视觉样式,视觉样式,9
+视觉样式,背景边框,背景与边框,9
+背景与边框,具体属性,background-image/clip/origin,9
+背景与边框,具体属性,border-radius,10
+背景与边框,具体属性,box-shadow,9
+视觉样式,文本样式,文本样式,9
+文本样式,具体属性,font-family/size/weight,10
+文本样式,具体属性,line-height,9
+文本样式,具体属性,text-align,9
+文本样式,具体属性,text-shadow,8
+视觉样式,列表表格,列表与表格,8
+列表与表格,具体属性,list-style-type,8
+列表与表格,具体属性,table-layout,7
+列表与表格,具体属性,border-collapse,8
+CSS,动态效果,动态效果,9
+动态效果,过渡效果,过渡效果,9
+过渡效果,具体属性,transition-property/duration/timing-function,9
+动态效果,变形效果,变形操作,9
+变形操作,具体属性,transform（translate/scale/rotate）,10
+变形操作,具体属性,transform-origin,8
+动态效果,动画效果,动画控制,9
+动画控制,具体属性,@keyframes、animation-fill-mode/direction,9
+CSS,响应式设计,响应式设计,10
+响应式设计,媒体查询,媒体查询,10
+媒体查询,具体语法,@media (max-width),10
+媒体查询,具体语法,设备方向（orientation）,8
+媒体查询,具体语法,分辨率（resolution）,7
+响应式设计,视口控制,视口控制,9
+视口控制,具体方法,viewport meta标签,10
+视口控制,具体方法,vw/vh单位,9
+视口控制,具体方法,rem/em单位,9
+CSS,性能优化,性能优化,8
+性能优化,渲染优化,渲染性能,8
+渲染性能,具体方法,repaint/reflow优化,8
+渲染性能,具体方法,CSS containment,7
+性能优化,资源加载,资源加载,8
+资源加载,具体方法,链接方式（link/import）,8
+资源加载,具体方法,预加载,8
+资源加载,具体方法,懒加载,8
+JavaScript,基础语法,基础语法,10
+基础语法,变量相关,变量,9
+变量,变量类型,引用值,9
+变量,变量类型,原始值,9
+基础语法,声明方式,声明,9
+声明,具体关键字,var,9
+声明,具体关键字,let,10
+声明,具体关键字,const,10
+基础语法,数据类型,数据类型,10
+数据类型,基本类型,基本类型,10
+基本类型,具体类型,String,10
+基本类型,具体类型,Number,10
+基本类型,具体类型,Boolean,10
+基本类型,具体类型,Null,9
+基本类型,具体类型,Undefined,9
+基本类型,具体类型,Symbol (唯一值),8
+基本类型,具体类型,BigInt,7
+数据类型,引用类型,引用类型,9
+数据类型,检测方法,类型检测,9
+数据类型,转换方法,类型转换 (显式与隐式),9
+基础语法,运算符,运算符,9
+运算符,具体类型,算术、赋值、比较、逻辑,10
+运算符,具体类型,位运算符,7
+运算符,具体类型,三元运算符,9
+基础语法,流程控制,流程控制,9
+流程控制,条件语句,if...else, switch,10
+流程控制,循环语句,for, while, do...while,10
+流程控制,遍历语句,for...in (遍历键),9
+流程控制,遍历语句,for...of (遍历值 - 需可迭代),9
+JavaScript,函数相关,函数,10
+函数,声明方式,函数声明,10
+函数,表达式方式,函数表达式,9
+函数,简写方式,箭头函数,10
+函数,参数处理,参数,9
+参数,参数对象,arguments 对象,8
+参数,扩展语法,Rest 参数 (...),9
+参数,扩展语法,Spread 运算符 (...),9
+参数,默认值,默认参数,9
+函数,作用域,作用域与闭包,10
+作用域与闭包,作用域类型,全局、函数、块级作用域,9
+作用域与闭包,作用域规则,词法作用域,9
+作用域与闭包,核心概念,闭包,10
+函数,执行机制,执行上下文与调用栈,9
+执行上下文与调用栈,关键字,this 关键字,10
+执行上下文与调用栈,上下文类型,全局上下文,9
+执行上下文与调用栈,调用方式,函数调用,9
+执行上下文与调用栈,调用方式,方法调用,9
+执行上下文与调用栈,调用方式,构造函数调用,8
+执行上下文与调用栈,绑定方式,call, apply, bind (显式绑定),9
+函数,高级特性,高阶函数,9
+高阶函数,具体技术,柯里化 (Currying),8
+高阶函数,具体技术,函数组合 (Composition),8
+JavaScript,数据结构,数据结构与内置对象,10
+数据结构与内置对象,核心对象,Object,10
+Object,属性描述,属性描述符 (Property Descriptors),9
+Object,访问器,getters / setters,9
+Object,方法,Object.keys, values, entries,10
+Object,方法,Object.create, Object.assign,9
+数据结构与内置对象,数组对象,Array,10
+Array,常用方法,常用方法 (map, filter, reduce, find),10
+Array,修改方法,splice, slice,9
+Array,增删方法,push, pop, shift, unshift,9
+Array,创建方法,Array.from, Array.of,8
+数据结构与内置对象,字符串对象,String (常用方法),10
+数据结构与内置对象,集合对象,Map / Set,9
+数据结构与内置对象,弱引用集合,WeakMap / WeakSet,8
+WeakMap / WeakSet,特性,弱引用,7
+WeakMap / WeakSet,垃圾回收,垃圾回收,7
+垃圾回收,具体算法,标记清理,7
+垃圾回收,具体算法,引用计数,7
+数据结构与内置对象,序列化,JSON,10
+JSON,方法,JSON.stringify,10
+JSON,方法,JSON.parse,10
+数据结构与内置对象,日期对象,Date,9
+数据结构与内置对象,解构赋值,解构赋值,9
+解构赋值,数组解构,数组解构,9
+解构赋值,对象解构,对象解构,9
+JavaScript,模块化,模块化,10
+模块化,ES模块,ES Modules,10
+ES Modules,导入导出,import,10
+ES Modules,导入导出,export / export default,10
+ES Modules,动态导入,动态导入 import(),9
+模块化,CommonJS,CommonJS (Node.js),9
+CommonJS (Node.js),导入导出,require(),10
+CommonJS (Node.js),导入导出,module.exports / exports,10
+模块化,历史规范,AMD / UMD (历史),7
+JavaScript,错误处理,错误处理 (Error Handling),9
+错误处理 (Error Handling),异常概念,异常,8
+错误处理 (Error Handling),捕获机制,捕获,8
+错误处理 (Error Handling),异常扩展,扩展异常,7
+扩展异常,捕获方式,全局捕获,7
+扩展异常,捕获方式,同步捕获,8
+扩展异常,捕获方式,异步捕获,8
+错误处理 (Error Handling),抛出机制,抛出,8
+错误处理 (Error Handling),错误对象,Error 对象,9
+Error 对象,具体类型,SyntaxError, TypeError, ReferenceError...,9
+JavaScript,浏览器相关,浏览器,9
+浏览器,DOM操作,DOM,10
+DOM,结构模型,DOM Tree,9
+DOM,节点相关,DOM Node,9
+DOM,查询方法,DOM Query,9
+DOM,属性操作,DOM Properties,9
+DOM,修改方法,DOM Modify,9
+DOM,样式操作,Styles,9
+DOM,坐标滚动,Coordinates、Element Scrolling,8
+DOM,事件处理,DOM Events,9
+DOM Events,事件类型,UI Event,8
+浏览器,浏览器API,浏览器API,9
+浏览器API,地址相关,location,10
+浏览器API,历史记录,history,9
+浏览器API,浏览器信息,navigator,8
+浏览器API,默认行为,Default Actions,8
+Default Actions,方法,event.preventDefault(),9
+浏览器API,表单操作,Form,9
+Form,事件,change\focus\blur\submit,9
+浏览器,网络请求,网络,9
+网络,请求方式,XHR,9
+网络,请求方式,Fetch,10
+网络,跨域方式,JSONP,8
+网络,实时通信,WebSocket,8
+浏览器,权限相关,权限,8
+权限,存储机制,Cookie,9
+权限,会话管理,Session,8
+权限,授权协议,OAuth,8
+权限,单点登录,SSO,7
+权限,令牌机制,JWT,8
+浏览器,安全相关,安全与隐私,9
+安全与隐私,安全策略,Content Security Policy（CSP）,8
+安全与隐私,跨域机制,CORS,9
+安全与隐私,注入防护,SQL 注入,8
+安全与隐私,XSS防护,XSS,9
+安全与隐私,CSRF防护,CSRF,9
+安全与隐私,中间人防护,MITM,7
+安全与隐私,Cookie属性,Samesite,8
+浏览器,开发者工具,开发者工具,9
+开发者工具,调试模式,设备模式,8
+开发者工具,面板,元素面板,9
+开发者工具,面板,控制台面板,10
+开发者工具,面板,源代码面板,9
+开发者工具,面板,网络面板,9
+开发者工具,面板,性能面板,8
+开发者工具,面板,内存面板,7
+开发者工具,面板,应用面板,8
+开发者工具,面板,安全面板,8
+高阶,前端框架,Vue.js,10
+Vue.js,核心概念,核心概念,10
+核心概念,架构模式,MVVM 模式,9
+核心概念,虚拟DOM,Virtual DOM (虚拟 DOM),10
+Virtual DOM (虚拟 DOM),核心算法,Diff 算法,10
+Virtual DOM (虚拟 DOM),更新机制,Patch (补丁),9
+核心概念,更新队列,nextTick (DOM 更新队列),9
+Vue.js,响应式原理,响应式原理,10
+响应式原理,Vue2实现,Vue 2: Object.defineProperty,9
+Vue 2: Object.defineProperty,访问器,getter / setter,10
+Vue 2: Object.defineProperty,数组处理,数组方法的重写,8
+响应式原理,Vue3实现,Vue 3: Proxy,10
+Vue 3: Proxy,代理对象,Proxy,10
+Vue 3: Proxy,反射对象,Reflect,9
+Vue.js,模板语法,模板语法,10
+模板语法,插值语法,插值,9
+模板语法,指令系统,指令,10
+指令,具体指令,v-bind (动态属性, 简写 :),10
+指令,具体指令,v-on (事件监听, 简写 @),10
+指令,具体指令,v-model (双向绑定),10
+指令,具体指令,v-if / v-else-if / v-else (条件渲染),10
+指令,具体指令,v-show (条件显示),9
+指令,具体指令,v-for (列表渲染),10
+指令,具体指令,v-slot (插槽),9
+模板语法,过滤器,过滤器 (Filters) (Vue 2),7
+模板语法,自定义指令,自定义指令 (Custom Directives),8
+Vue.js,生命周期,生命周期 (Lifecycle Hooks),10
+生命周期 (Lifecycle Hooks),创建阶段,创建阶段 (Creation),9
+创建阶段 (Creation),具体钩子,beforeCreate,9
+创建阶段 (Creation),具体钩子,created,10
+生命周期 (Lifecycle Hooks),挂载阶段,挂载阶段 (Mounting),9
+挂载阶段 (Mounting),具体钩子,beforeMount,9
+挂载阶段 (Mounting),具体钩子,mounted,10
+生命周期 (Lifecycle Hooks),更新阶段,更新阶段 (Updating),9
+更新阶段 (Updating),具体钩子,beforeUpdate,9
+更新阶段 (Updating),具体钩子,updated,9
+生命周期 (Lifecycle Hooks),销毁阶段,销毁阶段 (Destruction),9
+销毁阶段 (Destruction),具体钩子,beforeUnmount (Vue 3) / beforeDestroy (Vue 2),9
+销毁阶段 (Destruction),具体钩子,unmounted (Vue 3) / destroyed (Vue 2),9
+Vue.js,组件系统,组件,10
+组件,注册方式,组件注册 (全局 / 局部),9
+组件,通信方式,组件通信 (Communication),10
+组件通信 (Communication),具体方式,Props / $emit,10
+组件通信 (Communication),具体方式,v-model (组件自定义),9
+组件通信 (Communication),具体方式,provide / inject (跨层级),9
+组件通信 (Communication),具体方式,Event Bus (事件总线),8
+组件通信 (Communication),具体方式,$refs,9
+组件通信 (Communication),具体方式,$parent / $root,8
+组件,插槽机制,插槽 (Slot),9
+插槽 (Slot),具体类型,匿名插槽 (Default Slot),9
+插槽 (Slot),具体类型,具名插槽 (Named Slot),9
+插槽 (Slot),具体类型,作用域插槽 (Scoped Slot),8
+组件,高级特性,高级特性,8
+高级特性,缓存组件,keep-alive (内置组件),9
+高级特性,混入机制,Mixin (混入),8
+高级特性,异步组件,异步组件 (Async Component),8
+高级特性,渲染函数,render 函数 / h(),8
+Vue.js,Vue3特性,Vue 3,10
+Vue 3,组合式API,Composition API,10
+Composition API,核心函数,setup,10
+Composition API,响应式,ref,10
+Composition API,响应式,reactive,10
+Composition API,计算属性,computed,10
+Composition API,监听函数,watch,10
+Composition API,监听函数,watchEffect,9
+Composition API,引用转换,toRef / toRefs,9
+Composition API,生命周期,生命周期钩子,9
+Vue 3,新组件,新组件,9
+新组件,具体组件,Teleport (传送门),8
+新组件,具体组件,Suspense (异步组件占位),8
+新组件,具体组件,Fragments (多根节点),9
+Vue.js,生态系统,生态系统 (Ecosystem),9
+生态系统 (Ecosystem),路由管理,路由管理 (Routing),10
+路由管理 (Routing),路由库,Vue Router,10
+Vue Router,路由模式,路由模式 (Modes),9
+路由模式 (Modes),具体模式,hash (哈希模式),9
+路由模式 (Modes),具体模式,history (历史模式),10
+Vue Router,路由守卫,路由守卫 (Navigation Guards),9
+Vue Router,动态路由,动态路由 (Dynamic Routing),8
+生态系统 (Ecosystem),状态管理,状态管理 (State Management),10
+状态管理 (State Management),Vuex,Vuex (适用于 Vue 2/3),9
+Vuex (适用于 Vue 2/3),核心概念,State,10
+Vuex (适用于 Vue 2/3),核心概念,Getters,9
+Vuex (适用于 Vue 2/3),核心概念,Mutations (同步),10
+Vuex (适用于 Vue 2/3),核心概念,Actions (异步),10
+Vuex (适用于 Vue 2/3),核心概念,Modules (模块化),9
+状态管理 (State Management),Pinia,Pinia (Vue 3+ 推荐),10
+生态系统 (Ecosystem),构建工具,构建工具 (Tooling),9
+构建工具 (Tooling),具体工具,Vue CLI (基于 Webpack),9
+构建工具 (Tooling),具体工具,Vite (ESM-based),10
+生态系统 (Ecosystem),开发工具,开发工具,9
+开发工具,调试工具,Vue DevTools (浏览器插件),10
+高阶,JavaScript进阶,JavaScript 进阶,10
+JavaScript 进阶,面向对象,面向对象,9
+面向对象,原型相关,原型 (Prototype),10
+原型 (Prototype),属性,prototype (函数属性),10
+原型 (Prototype),属性,__proto__ (对象属性，非标准),8
+原型 (Prototype),方法,Object.getPrototypeOf(),9
+面向对象,原型链,原型链 (Prototype Chain),10
+原型链 (Prototype Chain),继承方式,原型继承,9
+面向对象,类语法,Class (ES6 类),10
+Class (ES6 类),构造函数,constructor (构造函数),10
+Class (ES6 类),继承关键字,extends (继承),10
+Class (ES6 类),父类引用,super (父类引用),9
+Class (ES6 类),静态方法,静态方法 (static),8
+Class (ES6 类),私有字段,私有字段 (#),8
+Class (ES6 类),访问器,getters / setters,9
+JavaScript 进阶,异步编程,异步编程,10
+异步编程,执行机制,事件循环,10
+事件循环,核心概念,调用栈,9
+事件循环,API,Web APIs,9
+事件循环,任务队列,任务队列,9
+事件循环,任务类型,宏任务 (Macro Task),10
+事件循环,任务类型,微任务 (Micro Task),10
+异步编程,回调函数,回调函数,8
+回调函数,问题,回调地狱,8
+异步编程,期约,期约,10
+期约,状态,期约结果 (Pending, Fulfilled, Rejected),10
+期约,扩展,期约扩展,8
+期约,链式调用,期约连锁,9
+期约,链式调用,期约链,9
+期约,方法,then (处理成功),10
+期约,方法,catch (处理失败),10
+期约,方法,finally (无论成功失败),9
+期约,常用方法,期约常用方法,9
+期约常用方法,具体方法,Promise.all (全部成功),10
+期约常用方法,具体方法,Promise.race (最快返回),9
+期约常用方法,具体方法,Promise.allSettled (全部完成),8
+期约常用方法,具体方法,Promise.any (任一成功),8
+异步编程,语法糖,async / await,10
+async / await,特性,Promise 的语法糖,10
+async / await,错误处理,try...catch (异步错误和捕获),10
+JavaScript 进阶,迭代元编程,迭代与元编程,9
+迭代与元编程,迭代器协议,迭代器协议 (Iterator Protocol),9
+迭代器协议 (Iterator Protocol),方法,next() 方法,9
+迭代器协议 (Iterator Protocol),返回值,返回 { value, done },9
+迭代与元编程,可迭代协议,可迭代协议 (Iterable Protocol),9
+可迭代协议 (Iterable Protocol),符号,[Symbol.iterator],10
+迭代与元编程,生成器,生成器 (Generator),9
+生成器 (Generator),声明方式,function* 声明,9
+生成器 (Generator),暂停, yield (暂停执行),9
+生成器 (Generator),恢复,next(value) (恢复执行并传递值),9
+生成器 (Generator),方法,return() / throw(),8
+生成器 (Generator),异步生成器,异步生成器 (Async Generators),8
+迭代与元编程,代理,代理,9
+代理,捕获器,捕获器,9
+代理,捕获器类型,代理捕获器,9
+代理,规则,捕获器不变式,7
+代理,参数,捕获器参数,8
+代理,特性,代理,9
+代理,特性,多层代理,7
+代理,特性,可撤销代理,7
+迭代与元编程,反射,Reflect,9
+Reflect,作用,提供与 Proxy 陷阱对应的默认行为,8
+Reflect,方法,Reflect.get(), Reflect.set(),9
+Reflect,特性,确保 receiver 的正确传递,8
+迭代与元编程,符号,Symbol,9
+Symbol,常用符号,Symbol.iterator,10
+Symbol,常用符号,Symbol.toPrimitive,8
+Symbol,常用符号,Symbol.hasInstance,7
+高阶,TypeScript,TypeScript,10
+TypeScript,类型系统,核心类型系统,10
+核心类型系统,注解方式,类型注解,10
+核心类型系统,推断机制,类型推断,9
+核心类型系统,别名定义,类型别名,9
+类型别名,关键字,type 关键字,10
+TypeScript,基础类型,基础类型,10
+基础类型,具体类型,any,10
+基础类型,具体类型,unknown,9
+基础类型,具体类型,void,9
+基础类型,具体类型,never,8
+基础类型,具体类型,元组,9
+基础类型,具体类型,枚举,9
+枚举,具体类型,数字枚举,9
+枚举,具体类型,字符串枚举,9
+枚举,具体类型,常量枚举 (const enum),8
+TypeScript,接口,接口,10
+接口,作用,定义对象形态,10
+接口,属性,可选属性 (?),9
+接口,属性,只读属性 (readonly),9
+接口,函数类型,函数类型,9
+接口,索引类型,可索引类型,8
+接口,继承,继承接口 (extends),9
+接口,实现,实现接口 (implements),9
+TypeScript,泛型,泛型,10
+泛型,函数泛型,泛型函数,10
+泛型,接口泛型,泛型接口,9
+泛型,类泛型,泛型类,9
+泛型,约束,泛型约束,9
+泛型约束,关键字,extends 关键字,10
+泛型,默认值,泛型默认值,8
+TypeScript,高级类型,高级类型,9
+高级类型,联合类型,联合类型,9
+高级类型,交叉类型,交叉类型 &,9
+高级类型,字面量类型,字面量类型,8
+高级类型,类型守卫,类型守卫,9
+类型守卫,具体方式,typeof,9
+类型守卫,具体方式,instanceof,9
+类型守卫,具体方式,in,8
+类型守卫,具体方式,自定义守卫 (is),8
+高级类型,可空类型,可空类型,8
+可空类型,配置,strictNullChecks,8
+高级类型,条件类型,条件类型,8
+条件类型,语法,T extends U ? X : Y,8
+条件类型,关键字,infer 关键字,7
+高级类型,映射类型,映射类型,8
+映射类型,语法,[K in keyof T],8
+映射类型,内置类型,Partial<T>, Required<T>,9
+映射类型,内置类型,Readonly<T>, Record<K,T>,9
+映射类型,内置类型,Pick<T,K>, Omit<T,K>,9
+映射类型,内置类型,Exclude<T,U>, Extract<T,U>,8
+映射类型,内置类型,NonNullable<T>,8
+映射类型,内置类型,Parameters<T>, ReturnType<T>,8
+高级类型,型变,型变 (类型兼容性),7
+型变 (类型兼容性),协变,协变 (Covariance),7
+型变 (类型兼容性),逆变,逆变 (Contravariance),7
+型变 (类型兼容性),双向协变,双向协变 (Bivariance),6
+TypeScript,模块声明,模块与声明,9
+模块与声明,命名空间,命名空间 (旧),7
+模块与声明,ES模块,ES 模块,10
+模块与声明,声明文件,声明文件 (.d.ts),9
+声明文件 (.d.ts),关键字,declare 关键字,9
+声明文件 (.d.ts),类型库,@types,9
+TypeScript,配置编译,配置与编译,9
+配置与编译,配置文件,tsconfig.json,10
+tsconfig.json,配置项,compilerOptions,9
+tsconfig.json,配置项,strict (严格模式),10
+TypeScript,装饰器, (实验性功能) 装饰器,8
+(实验性功能) 装饰器,类装饰器,类装饰器,8
+(实验性功能) 装饰器,方法装饰器,方法装饰器,8
+(实验性功能) 装饰器,属性装饰器,属性装饰器,8
+(实验性功能) 装饰器,参数装饰器,参数装饰器,8
+高阶,性能优化,性能优化,9
+性能优化,缓存策略,缓存策略优化,9
+性能优化,渲染优化,渲染优化,9
+性能优化,资源优化,图片优化,9
+性能优化,加载优化,资源加载优化,9
+Vue,核心特性,响应式数据,9
+Vue,核心特性,组件化,10
+Vue,核心特性,指令系统,8
+Vue,路由管理,Vue Router,9
+Vue,状态管理,Vuex,9
+React,核心特性,组件化,10
+React,核心特性,单向数据流,9
+React,状态管理,Redux,8
+JavaScript,核心特性,原型链,9
+JavaScript,核心特性,闭包,10
+JavaScript,异步编程,async/await,9
+CSS,核心特性,盒模型,10
+CSS,预处理器,Sass,8
+CSS,预处理器,Less,7
+Webpack,核心功能,模块打包,10
+Webpack,核心功能,代码分割,8
+Vite,核心特性,极速冷启动,9
+性能优化,核心手段,代码压缩,8
+性能优化,核心手段,图片优化,9
+性能优化,核心手段,CDN加速,7
