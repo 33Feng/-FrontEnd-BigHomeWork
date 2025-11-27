@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()  # 加载环境变量
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel

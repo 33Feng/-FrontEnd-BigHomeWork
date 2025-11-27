@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const service = axios.create({
   baseURL: 'http://localhost:8000/api',
-  timeout: 10000, // 延长超时时间
+  timeout: 60000, // 延长超时时间
   headers: {
     'Content-Type': 'application/json'
   }

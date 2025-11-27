@@ -1,23 +1,46 @@
-.DS_Store
-node_modules
-/dist
+# 操作系统相关文件
+.DS_Store               # macOS 隐藏文件
+Thumbs.db               # Windows 缩略图缓存
+*.swp                   # Vim 临时文件
+*.swo                   # Vim 交换文件
 
+# 依赖和构建产物
+node_modules/           # npm/yarn 依赖（体积大，无需上传）
+/dist/                  # 构建生成的静态文件（可通过源码重新构建）
+/build/                 # 其他构建目录（如有）
+/.pnpm-debug.log        # pnpm 日志
+npm-debug.log*          # npm 错误日志
+yarn-debug.log*         # yarn 错误日志
+yarn-error.log*         # yarn 错误日志
+pnpm-debug.log*         # pnpm 错误日志
 
-# local env files
+# 环境配置文件（可能包含敏感信息，如 API 密钥）
 .env.local
 .env.*.local
+.env.development.local
+.env.production.local
+.env.test.local
 
-# Log files
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# 编辑器/IDE 配置（本地个性化配置，无需共享）
+.idea/                  # IntelliJ 系列（WebStorm 等）
+.vscode/                # VS Code 配置（如插件、本地设置）
+*.suo                   # Visual Studio 解决方案用户选项
+*.ntvs*                 # Visual Studio 相关
+*.njsproj               # Visual Studio 项目文件
+*.sln                   # Visual Studio 解决方案文件
+.idea/                  # JetBrains 编辑器配置
+*.iml                   # IntelliJ 模块文件
+.vscode/settings.json   # VS Code 本地设置（如需共享基础配置可保留）
+.history/               # VS Code 历史记录
 
-# Editor directories and files
-.idea
-.vscode
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# 测试和缓存文件
+/coverage/              # 测试覆盖率报告（可通过测试命令重新生成）
+*.log                   # 通用日志文件
+.cache/                 # 构建缓存（如 babel、webpack 缓存）
+.tmp/                   # 临时文件
+
+# 包管理相关（锁文件建议保留，确保依赖版本一致）
+# 注意：package-lock.json 或 yarn.lock 不要忽略！
+# 以下是不需要的包管理文件
+.pnp                    # Yarn PnP 相关
+.pnp.js
