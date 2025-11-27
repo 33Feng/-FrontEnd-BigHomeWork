@@ -125,5 +125,4 @@ async def fuzzy_search_entity(keyword: str):
         nodes = [{"id": node, "label": node} for node in related_nodes]
         return {"code": 200, "data": {"nodes": nodes, "edges": related_edges}, "msg": "success"}
     except Exception as e:
->>>>>>> 55ae8cf3380320f92bf5bdce500c69b000d8bbf0
         raise HTTPException(status_code=500, detail=f"模糊搜索失败：{str(e)}")
