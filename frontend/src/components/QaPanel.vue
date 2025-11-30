@@ -138,6 +138,25 @@ watch(
   line-height: 1.8; /* 增加行高，提升可读性 */
   color: #333;
   padding: 15px; /* 内部间距 */
+   /* 1. 设置最大高度*/
+  max-height: 300px; 
+  /* 2. 开启垂直滚动 */
+  overflow-y: auto;
+  /* 3. 防止水平滚动条出现 */
+  overflow-x: hidden; 
+}
+.answer-text::-webkit-scrollbar {
+  width: 8px; /* 滚动条宽度 */
+}
+.answer-text::-webkit-scrollbar-thumb {
+  background-color: #dcdfe6; /* 滚动条滑块颜色 */
+  border-radius: 4px; 
+}
+.answer-text::-webkit-scrollbar-thumb:hover {
+  background-color: #c0c4cc; /* 鼠标悬停时的颜色 */
+}
+.answer-text::-webkit-scrollbar-track {
+  background-color: #f5f7fa; /* 滚动条轨道颜色 */
 }
 /* 优化标题样式 */
 .answer-text h1,

@@ -1,23 +1,41 @@
 <template>
   <div class="graph-wrapper" style="width: 100%; height: 550px; position: relative;">
     <div class="search-bar" style="margin-bottom: 10px; display: flex; gap: 10px;">
-      <el-input
-        v-model="searchEntity"
-        placeholder="输入节点名称搜索（如Vue、Vite、ES6）"
-        clearable
-        style="flex: 1;"
-        @keyup.enter="handleSearch"
-      ></el-input>
-      <el-button type="primary" @click="handleSearch">搜索</el-button>
-      <el-button @click="showAllGraph">显示全部</el-button>
-      <!-- 新增：全屏按钮（带图标） -->
-      <el-button 
-        type="primary" 
-        @click="toggleFullScreen"
-        icon="Fullscreen"  
-        circle
-        title="全屏展示图谱"
-      >全屏</el-button>
+      <!-- 左侧：搜索区域 -->
+      <div style="display: flex; gap: 10px; flex: 1; max-width: 70%;">
+        <el-input
+          v-model="searchEntity"
+          placeholder="输入节点名称搜索"
+          clearable
+          @keyup.enter="handleSearch"
+        ></el-input>
+        <el-button type="primary" @click="handleSearch">搜索</el-button>
+        <el-button @click="showAllGraph">显示全部</el-button>
+      </div>
+
+      <!-- 右侧：工具区域 -->
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <!-- 下拉导出菜单 -->
+        <el-dropdown>
+          <el-button plain>
+            <el-icon class="el-icon--left"><Download /></el-icon>
+            导出数据
+            <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item :icon="Picture" @click="exportGraphImage">导出为图片 (.png)</el-dropdown-item>
+              <el-dropdown-item :icon="Download" @click="exportGraphJSON">导出 JSON 数据</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+
+        <!-- 全屏按钮 -->
+        <el-button plain @click="toggleFullScreen">
+          <el-icon class="el-icon--left"><Fullscreen /></el-icon>
+          全屏模式
+        </el-button>
+      </div>
     </div>
 
     <!-- 修改：给图谱容器添加动态class，用于全屏样式控制 -->
@@ -45,8 +63,7 @@ import { api } from '../api/index';
 import { Network, DataSet } from 'vis-network/standalone';
 import { ElButton, ElMessage, ElInput } from 'element-plus';
 // 原有导入保留，新增：导入全屏图标
-import { Fullscreen, FullscreenExit } from '@element-plus/icons-vue';
-
+import { Fullscreen, Picture, Download, ArrowDown } from '@element-plus/icons-vue';
 // 接收父组件传递的核心实体
 const props = defineProps({
   mainEntity: {
@@ -245,6 +262,89 @@ const showAllGraph = () => {
   // 4. 强制加载全量数据（传递空字符串明确标识全量）
   initGraph('');
 };
+// ================= 新增功能：导出图谱图片 =================
+const exportGraphImage = () => {
+  if (!network.value || !graphRef.value) {
+    ElMessage.warning('图谱尚未加载，无法导出');
+    return;
+  }
+  
+  try {
+    // 获取 canvas 元素
+    const canvas = graphRef.value.querySelector('canvas');
+    if (!canvas) {
+      ElMessage.error('无法获取画布内容');
+      return;
+    }
+
+    // 转换为 Data URL (PNG格式)
+    const imgUrl = canvas.toDataURL('image/png');
+    
+    // 创建下载链接
+    const link = document.createElement('a');
+    link.href = imgUrl;
+    // 文件名：如果有实体名则用实体名，否则用默认名
+    const fileName = currentEntity.value 
+      ? `knowledge-graph-${currentEntity.value}.png` 
+      : 'frontend-knowledge-graph.png';
+    link.download = fileName;
+    
+    // 触发下载
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    ElMessage.success('图谱图片已导出');
+  } catch (e) {
+    ElMessage.error('导出图片失败：' + e.message);
+  }
+};
+
+//导出图谱 JSON
+const exportGraphJSON = () => {
+  if (!network.value) {
+    ElMessage.warning('图谱尚未加载，无法导出');
+    return;
+  }
+
+  try {
+    // 从 network 实例中获取当前的节点和边数据
+    // network.body.data.nodes 返回的是 DataSet，需要调用 .get() 转为数组
+    const nodesData = network.value.body.data.nodes.get();
+    const edgesData = network.value.body.data.edges.get();
+
+    const data = {
+      timestamp: new Date().toISOString(),
+      entity: currentEntity.value || 'ALL',
+      nodes: nodesData,
+      edges: edgesData
+    };
+
+    // 转换为 JSON 字符串
+    const jsonStr = JSON.stringify(data, null, 2);
+    
+    // 创建 Blob 对象
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // 创建下载链接
+    const link = document.createElement('a');
+    link.href = url;
+    const fileName = currentEntity.value 
+      ? `kg-data-${currentEntity.value}.json` 
+      : 'kg-data-full.json';
+    link.download = fileName;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url); // 释放内存
+
+    ElMessage.success('图谱数据已导出');
+  } catch (e) {
+    ElMessage.error('导出 JSON 失败：' + e.message);
+  }
+};
 
 // 监听问答面板实体变化（增加防抖）
 watch(
@@ -325,6 +425,8 @@ const handleFullScreenChange = () => {
 onUnmounted(() => {
   destroyNetwork();
   window.removeEventListener('resize', () => {});
+  // 移除全屏监听
+  document.removeEventListener('fullscreenchange', handleFullScreenChange);
 });
 </script>
 
@@ -357,11 +459,13 @@ onUnmounted(() => {
   border: none !important;
   margin: 0 !important;
   padding: 20px !important;
+  box-sizing: border-box;
 }
 
-/* 新增：全屏状态下的图谱内容区样式 */
-.graph-container.fullscreen >>> .vis-network {
+/* 深度选择器确保 vis-network 占满 */
+.graph-container.fullscreen :deep(.vis-network) {
   width: 100% !important;
   height: 100% !important;
+  outline: none;
 }
 </style>

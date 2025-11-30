@@ -1,0 +1,11 @@
+**/node_modules/
+**/venv/
+
+# --- 忽略所有 Python 缓存 ---
+**/*.pyc
+**/__pycache__/
+
+# --- 忽略系统和编辑器垃圾 ---
+.DS_Store
+.vscode/
+*.log
