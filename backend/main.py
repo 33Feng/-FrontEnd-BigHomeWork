@@ -28,11 +28,16 @@ class QuestionRequest(BaseModel):
 
 # API接口
 @app.get("/api/graph-data")
-async def get_graph_data():
-    """获取知识图谱可视化数据"""
+async def get_graph_data(limit: int = 60):
+    """获取初始核心图谱数据（只返回Top N节点）"""
+    if not kg:
+        raise HTTPException(status_code=500, detail="图谱未初始化，请检查后端日志")
     try:
-        return {"code": 200, "data": kg.get_graph_data(), "msg": "success"}
+        # 这里改成 get_top_graph_data，并传入 limit
+        data = kg.get_top_graph_data(limit=limit)
+        return {"code": 200, "data": data, "msg": "success"}
     except Exception as e:
+        print(f"获取图谱数据出错: {e}") # 打印错误日志
         raise HTTPException(status_code=500, detail=f"获取图谱数据失败：{str(e)}")
 
 @app.post("/api/qa")
@@ -44,6 +49,12 @@ async def qa(request: QuestionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"问答处理失败：{str(e)}")
 
+@app.get("/api/graph-data/full")
+async def get_full_graph_data():
+    try:
+        return {"code": 200, "data": kg.get_graph_data(), "msg": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取全量数据失败：{str(e)}")
 @app.get("/api/entities")
 async def get_entities():
     """获取所有实体列表"""
