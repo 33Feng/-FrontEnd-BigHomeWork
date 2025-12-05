@@ -42,6 +42,9 @@ export const api = {
     return service.get('/graph-data');
   },
   // 新增：按实体获取图谱数据
+  getFullGraphData() {
+    return service.get('/graph-data/full'); // 获取全量数据
+  },
   getGraphDataByEntity(entity) {
     return service.get(`/graph-data/entity/${encodeURIComponent(entity)}`);
   },

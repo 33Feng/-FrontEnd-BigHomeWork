@@ -96,7 +96,7 @@ const destroyNetwork = () => {
 };
 
 // 初始化图谱（核心修复：全程非空校验）
-const initGraph = async (targetEntity = '') => {
+const initGraph = async (targetEntity = '', isFull = false) => {
   try {
     loading.value = true;
     destroyNetwork(); // 先销毁旧实例，避免内存泄漏
@@ -130,18 +130,20 @@ const initGraph = async (targetEntity = '') => {
     let res;
     try {
       if (entity) {
+        // 有实体，查实体子图
         res = await api.getGraphDataByEntity(entity);
+      } else if (isFull) { 
+        // 显式要求全量数据 (对应显示全部按钮)
+        res = await api.getFullGraphData(); 
       } else {
-        // 无实体：强制调用全量接口（核心修复）
-      res = await api.getGraphData();
-      console.log('加载全量图谱数据：', res.data); // 调试日志
+        // 默认初始化：只查核心节点 (Top N)
+        res = await api.getGraphData();
       }
-    } catch (dataError) {
-      ElMessage.error(`获取图谱数据失败：${dataError.message}`);
+    } catch (apiError) {
+      ElMessage.error(`数据请求失败：${apiError.message}`);
       loading.value = false;
-      return; // 数据获取失败，终止执行
+      return; 
     }
-
     const { nodes, edges } = res.data;
 
     // 5. 校验数据有效性
@@ -176,27 +178,50 @@ const initGraph = async (targetEntity = '') => {
       }))
     );
 
-    // 7. 图谱配置
+    // 7. 图谱配置 (优化版)
     const options = {
-      nodes: { font: { size: 14, color: '#333' } },
-      edges: { font: { size: 12, align: 'middle' } },
+      nodes: { 
+        font: { size: 14, color: '#333' },
+        shape: 'dot', // 使用 dot 形状，配合 value 属性可以根据重要性改变大小
+        scaling: {
+          min: 10,
+          max: 30, // 核心节点最大尺寸
+          label: { enabled: true, min: 14, max: 20 }
+        }
+      },
+      edges: { 
+        font: { size: 10, align: 'middle', color: '#888' }, // 字体改小一点，颜色淡一点
+        color: { color: '#e2e2e2', highlight: '#409EFF' }, // 默认连线颜色淡化，减少视觉混乱
+        smooth: { type: 'continuous' } // 平滑曲线
+      },
       physics: {
         enabled: true,
-        stabilization: { enabled: true, iterations: 500, fit: true },
-        barnesHut: {
-          gravitationalConstant: -2000,
-          centralGravity: 0.3,
-          springLength: 200,
-          springConstant: 0.04,
-          damping: 0.09,
-          avoidOverlap: 0.1
+        // 使用 forceAtlas2Based 求解器，通常比 barnesHut 更适合展示复杂的网络，布局更分散
+        solver: 'forceAtlas2Based', 
+        forceAtlas2Based: {
+          theta: 0.5,
+          gravitationalConstant: -50, // 斥力，负值越大排斥越强
+          centralGravity: 0.01,       // 中心引力，越小越分散
+          springConstant: 0.08,
+          springLength: 100,
+          damping: 0.4,
+          avoidOverlap: 0.5           // 避免重叠
+        },
+        stabilization: {
+          enabled: true,
+          iterations: 150, // 减少预计算次数，从500降到150，加快初始显示
+          updateInterval: 25,
+          onlyDynamicEdges: false,
+          fit: true
         }
       },
       interaction: { 
         hover: true, 
         tooltipDelay: 200,
         dragNodes: true,
-        zoomView: true
+        zoomView: true,
+        navigationButtons: false,
+        keyboard: true
       }
     };
 
@@ -260,7 +285,7 @@ const showAllGraph = () => {
   // 3. 通知父组件清除实体（确保联动状态一致）
   emit('update:currentEntity', '');
   // 4. 强制加载全量数据（传递空字符串明确标识全量）
-  initGraph('');
+  initGraph('', true);
 };
 // ================= 新增功能：导出图谱图片 =================
 const exportGraphImage = () => {

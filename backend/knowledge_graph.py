@@ -30,6 +30,44 @@ class FrontendKnowledgeGraph:
                 relation=row['relation'],
                 weight=row['weight']
             )
+    def get_top_graph_data(self, limit: int = 50) -> Dict:
+        """
+        优化：获取核心图谱数据（按节点度数排序，只显示重要节点）
+        """
+        # 1. 计算所有节点的度（连接数），并按降序排序
+        # degrees 返回的是 (node, degree) 的元组列表
+        sorted_nodes = sorted(self.G.degree, key=lambda x: x[1], reverse=True)
+        
+        # 2. 取前 limit 个节点作为核心节点
+        top_nodes_list = [node for node, degree in sorted_nodes[:limit]]
+        top_nodes_set = set(top_nodes_list)
+        
+        # 3. 构建返回的节点列表
+        nodes = []
+        for node in top_nodes_list:
+            nodes.append({
+                "id": str(node),
+                "label": str(node),
+                # 可以在这里根据度数大小设置初始大小，度数越大节点越大
+                "value": self.G.degree[node] 
+            })
+            
+        # 4. 构建返回的边列表（只保留核心节点之间的连线，或者核心节点发出的连线）
+        edges = []
+        for u, v, data in self.G.edges(data=True):
+            # 策略：只有当源节点和目标节点都在核心列表中时才显示（最简洁）
+            # 或者：只要有一个在核心列表中就显示（稍微密一点，但能看到更多关联）
+            # 这里采用“都在核心列表中”，保证初始视图清爽
+            if u in top_nodes_set and v in top_nodes_set:
+                edges.append({
+                    "from": str(u),
+                    "to": str(v),
+                    "label": str(data.get('relation', '')),
+                    "weight": int(data.get('weight', 0)),
+                    "relation": str(data.get('relation', ''))
+                })
+                
+        return {"nodes": nodes, "edges": edges}        
 
     def query_relation(self, entity: str) -> List[Dict]:
         """查询实体相关关系"""
