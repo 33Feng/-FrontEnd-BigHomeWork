@@ -91,7 +91,7 @@ const submitQuestion = async () => {
   isLoading.value = true;
   try {
     // 根据模式设置不同超时时间
-    const timeout = answerMode.value === 'quick' ? 7000 : 60000;
+    const timeout = answerMode.value === 'quick' ? 7000 : 200000;
     
     // 调用API时传递模式参数
     const res = await api.qa({
@@ -149,40 +149,37 @@ watch(
 .qa-panel {
   margin-bottom: 20px;
 }
+/* 回答容器：保持原位置和宽度，不影响其他区域 */
 .answer-container {
-  margin-top: 20px;
+  margin-top: 15px;
+  width: 100%; /* 继承父容器宽度，不额外占用空间 */
 }
-/* .answer-text {
-  white-space: pre-wrap;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #333;
-  margin: 0;
-} */
+/* 关键修改：答案文本显示容器 */
 .answer-text {
-  font-size: 15px;
-  line-height: 1.8; /* 增加行高，提升可读性 */
-  color: #333;
-  padding: 15px; /* 内部间距 */
-   /* 1. 设置最大高度*/
-  max-height: 300px; 
-  /* 2. 开启垂直滚动 */
-  overflow-y: auto;
-  /* 3. 防止水平滚动条出现 */
-  overflow-x: hidden; 
+  /* 1. 保持原显示区域高度（根据你的需求调整 max-height，比如原高度是 400px） */
+  max-height: 400px; /* 核心：限制容器最大高度（和原显示区域一致） */
+  /* 2. 纵向溢出时显示滚动条，横向不溢出（避免挤压布局） */
+  overflow-y: auto; /* 关键：内容超过 max-height 时显示纵向滚动条 */
+  overflow-x: hidden; /* 防止横向滚动条出现，保持布局整洁 */
+  /* 3. 其他样式优化（可选，根据原有样式调整） */
+  padding: 10px;
+  line-height: 1.6; /* 提高可读性 */
+  word-break: break-all; /* 长单词/链接自动换行，避免横向溢出 */
 }
+/* 滚动条样式优化（可选，让滚动条更美观） */
 .answer-text::-webkit-scrollbar {
-  width: 8px; /* 滚动条宽度 */
-}
-.answer-text::-webkit-scrollbar-thumb {
-  background-color: #dcdfe6; /* 滚动条滑块颜色 */
-  border-radius: 4px; 
-}
-.answer-text::-webkit-scrollbar-thumb:hover {
-  background-color: #c0c4cc; /* 鼠标悬停时的颜色 */
+  width: 6px; /* 滚动条宽度 */
 }
 .answer-text::-webkit-scrollbar-track {
-  background-color: #f5f7fa; /* 滚动条轨道颜色 */
+  background: #f1f1f1; /* 滚动条轨道背景 */
+  border-radius: 3px;
+}
+.answer-text::-webkit-scrollbar-thumb {
+  background: #c1c1c1; /* 滚动条滑块颜色 */
+  border-radius: 3px;
+}
+.answer-text::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8; /* 滚动条 hover 状态 */
 }
 /* 优化标题样式 */
 .answer-text h1,
