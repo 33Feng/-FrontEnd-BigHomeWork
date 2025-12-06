@@ -124,13 +124,13 @@ class FrontendKnowledgeGraph:
         else:
             # 深度回答提示词
             prompt = f"""请基于以下上下文信息，进行深入思考后详细回答问题，
-可以分点阐述，提供更全面的信息和分析。
+可以分点阐述，提供更全面的信息和分析，并给出完整严谨科学的回答,请一定要完整给出答案。
 上下文信息：
 {kg_context}
 
 问题：{question}
 """
-            timeout = 60  # 深度回答超时时间（秒）
+            timeout = 200  # 深度回答超时时间（秒）
     
         # 调用DeepSeek API
         try:
@@ -146,7 +146,7 @@ class FrontendKnowledgeGraph:
                     {"role": "user", "content": prompt}
                 ],
                 "temperature": 0.7 if mode == "deep" else 0.3,  # 深度回答温度更高
-                "max_tokens": 1000 if mode == "deep" else 300   # 深度回答字数更多
+                "max_tokens": 3000 if mode == "deep" else 300   # 深度回答字数更多
             }
         
             response = requests.post(
