@@ -95,71 +95,81 @@ class FrontendKnowledgeGraph:
             })
         return results
 
-    def answer_question(self, question: str) -> Dict:
+    def answer_question(self, question: str, mode: str = "quick") -> Dict:
         """使用DeepSeek大模型回答问题，结合知识图谱数据增强"""
         # 提取问题中的核心实体
         entities = [node for node in self.G.nodes if node in question]
         related_data = []
         if entities:
-            # 获取相关实体的关系数据
             main_entity = max(entities, key=lambda x: len(x))
             related_data = self.query_relation(main_entity)
-        
+    
         # 构建知识图谱上下文
         kg_context = ""
         if related_data:
             kg_context = "根据知识图谱，我获取到以下相关信息：\n"
             for item in related_data:
                 kg_context += f"- {item['source']} {item['relation']} {item['target']}（相关度：{item['weight']}/10）\n"
-        
+    
+        # 根据模式调整提示词和超时时间
+        if mode == "quick":
+            # 快速回答提示词
+            prompt = f"""请基于以下上下文信息，用简洁的语言快速回答问题，控制在5-7秒内完成。
+上下文信息：
+{kg_context}
+
+问题：{question}
+"""
+            timeout = 7  # 快速回答超时时间（秒）
+        else:
+            # 深度回答提示词
+            prompt = f"""请基于以下上下文信息，进行深入思考后详细回答问题，
+可以分点阐述，提供更全面的信息和分析。
+上下文信息：
+{kg_context}
+
+问题：{question}
+"""
+            timeout = 60  # 深度回答超时时间（秒）
+    
         # 调用DeepSeek API
         try:
             headers = {
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self.deepseek_api_key}"
             }
-            
-            # 构建提示词
-            prompt = f"""请基于以下上下文信息回答问题。如果上下文没有相关信息，也可以根据你的知识回答。
-上下文信息：
-{kg_context}
-
-问题：{question}
-"""
-            
+        
             data = {
                 "model": "deepseek-chat",
                 "messages": [
                     {"role": "system", "content": "你是一个前端技术专家，擅长解答各种前端技术问题。"},
                     {"role": "user", "content": prompt}
                 ],
-                "temperature": 0.7
+                "temperature": 0.7 if mode == "deep" else 0.3,  # 深度回答温度更高
+                "max_tokens": 1000 if mode == "deep" else 300   # 深度回答字数更多
             }
-            
+        
             response = requests.post(
                 self.deepseek_api_url,
                 headers=headers,
                 json=data,
-                timeout=30
+                timeout=timeout  # 使用根据模式设置的超时时间
             )
-            
+        
             response.raise_for_status()
-            # 关键修改：将Markdown格式的答案转换为HTML
             answer_markdown = response.json()["choices"][0]["message"]["content"]
-            # 转换Markdown为HTML，并添加基础样式类
             answer = markdown.markdown(
                 answer_markdown,
                 extensions=[
-                    'extra',  # 支持表格、代码块等扩展
-                    'codehilite'  # 代码高亮（可选）
+                    'extra',
+                    'codehilite'
                 ]
             )
-            
+        
         except Exception as e:
             print(f"DeepSeek API调用失败: {str(e)}")
-            #  fallback到原有逻辑
+            # fallback逻辑保持不变
             answer = "抱歉，暂时无法获取回答。"
-            # 对fallback答案也进行HTML格式化
             if related_data:
                 answer_parts = [f"<h4>关于「{main_entity}」的相关知识：</h4>"]
                 for item in related_data:
@@ -167,7 +177,7 @@ class FrontendKnowledgeGraph:
                 answer = "\n".join(answer_parts)
             else:
                 answer = "<p>抱歉，暂时无法获取回答。</p>"
-        
+    
         # 生成推荐（保持原有逻辑）
         recommendations = []
         if related_data:
@@ -177,7 +187,7 @@ class FrontendKnowledgeGraph:
                     "reason": f"{item['source']} {item['relation']} {item['target']}",
                     "weight": item['weight']
                 })
-        
+    
         return {
             "answer": answer,
             "related_entities": entities,
