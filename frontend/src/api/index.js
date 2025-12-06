@@ -52,8 +52,8 @@ export const api = {
   fuzzySearchEntity(keyword) {
     return service.get(`/graph-data/entity/fuzzy/${encodeURIComponent(keyword)}`);
   },
-  qa(question) {
-    return service.post('/qa', { question });
+  qa(data, config = {}) {
+    return service.post('/qa', data, config);
   },
   getEntities() {
     return service.get('/entities');

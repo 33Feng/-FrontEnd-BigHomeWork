@@ -1,6 +1,16 @@
 <template>
   <div class="qa-panel">
+    <!-- 新增模式切换按钮 -->
+    <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+      <span>回答模式：</span>
+      <el-radio-group v-model="answerMode" @change="handleModeChange">
+        <el-radio label="quick">快速回答 (5-7秒)</el-radio>
+        <el-radio label="deep">深度回答 (最长60秒)</el-radio>
+      </el-radio-group>
+    </div>
+
     <el-form @submit.prevent="submitQuestion">
+      <!-- 原有表单内容保持不变 -->
       <el-form-item label="请输入问题：">
         <el-input
           v-model="question"
@@ -9,37 +19,39 @@
           @keyup.enter="submitQuestion"
         ></el-input>
       </el-form-item>
-      <!-- 新增：快速提问按钮（基于图谱选中的实体） -->
+      
+      <!-- 快速提问按钮 -->
       <div v-if="currentEntity" style="margin-bottom: 10px;">
         <el-button type="text" @click="quickAsk">快速提问：{{ currentEntity }}相关知识</el-button>
       </div>
+      
       <el-form-item>
         <el-button type="primary" @click="submitQuestion">提交问题</el-button>
         <el-button @click="resetForm">清空</el-button>
       </el-form-item>
     </el-form>
 
-    <!-- 加载状态提示 -->
-    <div v-if="isLoading" class="loading">正在生成答案，请稍候...</div>
+    <!-- 修改加载状态提示，区分不同模式 -->
+    <div v-if="isLoading" class="loading">
+      <template v-if="answerMode === 'deep'">深度思考中，请稍候（最长60秒）...</template>
+      <template v-else>正在生成答案，请稍候（5-7秒）...</template>
+    </div>
 
-    <!-- 回答展示：将pre标签改为div，使用v-html渲染 -->
-  <div class="answer-container" v-if="answer && !isLoading">
-    <h3>回答：</h3>
-    <el-card>
-      <!-- 关键修改：用v-html展示HTML内容，移除pre标签 -->
-      <div class="answer-text" v-html="answer"></div>
-    </el-card>
-  </div>
+    <!-- 回答展示区域保持不变 -->
+    <div class="answer-container" v-if="answer && !isLoading">
+      <h3>回答：</h3>
+      <el-card>
+        <div class="answer-text" v-html="answer"></div>
+      </el-card>
+    </div>
 
-
-    <!-- 推荐面板 -->
     <RecommendPanel :recommendations="recommendations" />
   </div>
 </template>
 
 <script setup>
 import { ref, defineEmits, defineProps, watch } from 'vue';
-import { ElForm, ElFormItem, ElInput, ElButton, ElCard, ElMessage } from 'element-plus';
+import { ElForm, ElFormItem, ElInput, ElButton, ElCard, ElMessage, ElRadioGroup, ElRadio } from 'element-plus';
 import { api } from '../api/index';
 import RecommendPanel from './RecommendPanel.vue';
 
@@ -51,54 +63,68 @@ const props = defineProps({
   }
 });
 
-// 定义emit，向父组件传递核心实体
+// 定义emit
 const emit = defineEmits(['update:mainEntity']);
 
 // 响应式数据
 const question = ref('');
 const answer = ref('');
 const recommendations = ref([]);
-const mainEntity = ref(''); // 核心实体
-// 新增加载状态变量
+const mainEntity = ref('');
 const isLoading = ref(false);
+// 新增：回答模式，默认快速回答
+const answerMode = ref('quick');
 
-// 提交问题
+// 处理模式切换
+const handleModeChange = () => {
+  // 可以在这里添加模式切换时的额外逻辑
+  ElMessage.info(`已切换至${answerMode.value === 'quick' ? '快速' : '深度'}回答模式`);
+};
+
+// 提交问题（修改部分）
 const submitQuestion = async () => {
   if (!question.value.trim()) {
     ElMessage.warning('请输入问题！');
     return;
   }
 
-  isLoading.value = true; // 开始加载
+  isLoading.value = true;
   try {
-    const res = await api.qa(question.value);
-    answer.value = res.data.answer; // 直接接收HTML格式的答案
+    // 根据模式设置不同超时时间
+    const timeout = answerMode.value === 'quick' ? 7000 : 60000;
+    
+    // 调用API时传递模式参数
+    const res = await api.qa({
+      question: question.value,
+      mode: answerMode.value
+    }, {
+      timeout: timeout // 覆盖全局超时设置
+    });
+    
+    answer.value = res.data.answer;
     recommendations.value = res.data.recommendations;
     mainEntity.value = res.data.related_entities[0] || '';
     emit('update:mainEntity', mainEntity.value);
   } catch (error) {
-    // 区分超时错误和其他错误
     if (error.code === 'ECONNABORTED') {
-      ElMessage.error('请求超时，请稍后重试（问题可能较复杂，需要更长时间处理）');
+      ElMessage.error(`${answerMode.value === 'quick' ? '快速回答超时' : '深度思考超时'}，请稍后重试`);
     } else {
       ElMessage.error('获取回答失败：' + (error.message || '未知错误'));
     }
   } finally {
-    isLoading.value = false; // 无论成功失败，结束加载
+    isLoading.value = false;
   }
 };
 
-// 重置表单
+// 原有其他方法保持不变
 const resetForm = () => {
   question.value = '';
   answer.value = '';
   recommendations.value = [];
   mainEntity.value = '';
-  // 重置时通知父组件清空实体（显示全量图谱）
   emit('update:mainEntity', '');
 };
 
-// 新增：基于图谱选中的实体快速提问
 const quickAsk = () => {
   if (props.currentEntity) {
     question.value = `${props.currentEntity}相关知识有哪些？`;
@@ -106,7 +132,6 @@ const quickAsk = () => {
   }
 };
 
-// 监听图谱实体变化，自动填充问题（可选）
 watch(
   () => props.currentEntity,
   (newEntity) => {
@@ -119,6 +144,7 @@ watch(
 </script>
 
 <style scoped>
+  
 /* 原有样式不变 */
 .qa-panel {
   margin-bottom: 20px;

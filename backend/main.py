@@ -22,9 +22,11 @@ app.add_middleware(
 # 初始化知识图谱
 kg = FrontendKnowledgeGraph()
 
-# 请求模型
+# 修改请求模型
 class QuestionRequest(BaseModel):
     question: str
+    mode: str = "quick"  # 新增模式参数，默认快速回答
+
 
 # API接口
 @app.get("/api/graph-data")
@@ -40,11 +42,13 @@ async def get_graph_data(limit: int = 60):
         print(f"获取图谱数据出错: {e}") # 打印错误日志
         raise HTTPException(status_code=500, detail=f"获取图谱数据失败：{str(e)}")
 
+# 修改问答接口
 @app.post("/api/qa")
 async def qa(request: QuestionRequest):
     """问答接口"""
     try:
-        result = kg.answer_question(request.question)
+        # 将模式参数传递给回答方法
+        result = kg.answer_question(request.question, request.mode)
         return {"code": 200, "data": result, "msg": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"问答处理失败：{str(e)}")
