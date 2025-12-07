@@ -1,20 +1,18 @@
 <template>
   <div class="graph-wrapper" style="width: 100%; height: 550px; position: relative;">
-    <div class="search-bar" style="margin-bottom: 10px; display: flex; gap: 10px;">
-      <!-- 左侧：搜索区域 -->
-      <div style="display: flex; gap: 10px; flex: 1; max-width: 70%;">
-        <el-input
-          v-model="searchEntity"
-          placeholder="输入节点名称搜索"
-          clearable
-          @keyup.enter="handleSearch"
-        ></el-input>
-        <el-button type="primary" @click="handleSearch">搜索</el-button>
-        <el-button @click="showAllGraph">显示全部</el-button>
-      </div>
-
-      <!-- 右侧：工具区域 -->
+    <!-- 顶部导航栏：标题 + 右侧功能按钮（含视图切换） -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      
+      <!-- 右侧功能按钮组：视图切换 + 导出 + 全屏 -->
       <div style="display: flex; gap: 10px; align-items: center;">
+        <!-- 视图切换按钮（移至此处，保持蓝绿切换逻辑） -->
+        <el-button 
+          :type="viewMode === 'graph' ? 'success' : 'primary'" 
+          @click="toggleViewMode"
+        >
+          {{ viewMode === 'graph' ? '切换为词条视图' : '切换为图谱视图' }}
+        </el-button>
+        
         <!-- 下拉导出菜单 -->
         <el-dropdown>
           <el-button plain>
@@ -38,32 +36,93 @@
       </div>
     </div>
 
-    <!-- 修改：给图谱容器添加动态class，用于全屏样式控制 -->
-    <div :class="['graph-container', { 'fullscreen': isFullScreen }]" style="width: 100%; height: 500px; position: relative;">
-      <div v-if="loading" class="loading">
-        {{ currentEntity ? `加载「${currentEntity}」相关图谱...` : '加载知识图谱中...' }}
+    <!-- 搜索区域（独立一行，不被压缩） -->
+    <div class="search-bar" style="margin-bottom: 10px; display: flex; gap: 10px;">
+      <el-input
+        v-model="searchEntity"
+        placeholder="输入节点名称搜索"
+        clearable
+        @keyup.enter="handleSearch"
+        style="flex: 1; max-width: 80%;"
+      ></el-input>
+      <el-button type="primary" @click="handleSearch">搜索</el-button>
+      <el-button @click="showAllGraph">显示全部</el-button>
+    </div>
+
+    <!-- 图谱/词条容器 -->
+    <div :class="['graph-container', { 'fullscreen': isFullScreen }]" style="width: 100%; height: 500px; position: relative; overflow: hidden;">
+      <!-- 仅保留右上角加载提示 -->
+      <div v-if="loading" class="loading-tip">
+        <el-icon style="margin-right: 5px;"><Loading /></el-icon>
+        {{ currentEntity ? `加载「${currentEntity}」数据...` : '加载中...' }}
       </div>
+      
+      <!-- 图谱视图 -->
       <div 
+        v-show="viewMode === 'graph'"
         ref="graphRef" 
         style="width: 100%; height: 100%; border: 1px solid #e6e6e6; border-radius: 8px;"
       ></div>
+      
+      <!-- 词条视图 -->
+      <div 
+        v-show="viewMode === 'terms'" 
+        class="terms-container"
+      >
+        <div class="terms-header">
+          <h3>实体关系列表</h3>
+          <p v-if="currentEntity">当前实体: {{ currentEntity }}</p>
+        </div>
+        <div class="terms-list">
+          <!-- 加载中显示骨架屏 -->
+          <div v-if="loading" class="terms-loading">
+            <div class="loading-skeleton" v-for="i in 5" :key="i"></div>
+          </div>
+          
+          <!-- 有数据时显示词条 -->
+          <div 
+            v-else-if="termsData.edges.length > 0"
+            v-for="(edge, index) in termsData.edges" 
+            :key="`${edge.source}-${edge.relation}-${edge.target}-${index}`" 
+            class="term-item"
+          >
+            <div class="term-node">{{ edge.source }}</div>
+            <div class="term-relation">{{ edge.relation }}</div>
+            <div class="term-node">{{ edge.target }}</div>
+            <el-button 
+              type="text" 
+              size="small" 
+              @click="handleTermClick(edge.source === currentEntity ? edge.target : edge.source)"
+            >
+              查看详情
+            </el-button>
+          </div>
+          
+          <!-- 无数据时显示友好提示 -->
+          <div v-else class="no-data">
+            没有相关实体关系数据
+          </div>
+        </div>
+      </div>
+      
       <el-button 
         type="text" 
         @click="initGraph" 
-        style="position: absolute; bottom: 10px; right: 10px;"
+        style="position: absolute; bottom: 10px; right: 10px; z-index: 10;"
       >
         重新加载
       </el-button>
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted, watch, defineProps, defineEmits } from 'vue';
 import { api } from '../api/index';
 import { Network, DataSet } from 'vis-network/standalone';
-import { ElButton, ElMessage, ElInput } from 'element-plus';
-// 原有导入保留，新增：导入全屏图标
-import { Fullscreen, Picture, Download, ArrowDown } from '@element-plus/icons-vue';
+import { ElButton, ElMessage, ElInput, ElIcon } from 'element-plus';
+import { Fullscreen, Picture, Download, ArrowDown, Loading } from '@element-plus/icons-vue';
+
 // 接收父组件传递的核心实体
 const props = defineProps({
   mainEntity: {
@@ -77,139 +136,257 @@ const emit = defineEmits(['update:currentEntity']);
 
 // 响应式数据
 const graphRef = ref(null);
-const network = ref(null); // 图谱实例（初始为null）
-const loading = ref(true);
+const network = ref(null); // 图谱实例
+const loading = ref(false); // 加载状态（默认false）
 const searchEntity = ref('');
 const currentEntity = ref('');
-// 原有响应式数据保留，新增：全屏状态标识
-const isFullScreen = ref(false); // 控制全屏状态
+const isFullScreen = ref(false);
+const viewMode = ref('graph'); // 视图模式：graph/terms
+const termsData = ref({ nodes: [], edges: [] }); // 词条数据
+const initRetryCount = ref(0); // 初始化重试计数器
 
-// 销毁图谱实例（增加非空校验）
-const destroyNetwork = () => {
-  if (network.value) {
-    // 先移除所有事件监听，再销毁
-    network.value.off('stabilizationIterationsDone');
-    network.value.off('click');
-    network.value.destroy();
-    network.value = null; // 销毁后重置为null
+// 切换视图模式（功能逻辑不变）
+const toggleViewMode = () => {
+  const oldMode = viewMode.value;
+  viewMode.value = viewMode.value === 'graph' ? 'terms' : 'graph';
+  
+  // 切换到词条视图：强制加载数据
+  if (viewMode.value === 'terms') {
+    loadTermsData(currentEntity.value || props.mainEntity);
+  } 
+  // 切换到图谱视图：强制初始化
+  else if (viewMode.value === 'graph' && oldMode === 'terms') {
+    if (graphRef.value) {
+      graphRef.value.innerHTML = '';
+    }
+    initGraph(currentEntity.value || props.mainEntity);
   }
 };
 
-// 初始化图谱（核心修复：全程非空校验）
-const initGraph = async (targetEntity = '', isFull = false) => {
+// 加载词条数据（功能逻辑不变）
+const loadTermsData = async (entity = '') => {
   try {
     loading.value = true;
-    destroyNetwork(); // 先销毁旧实例，避免内存泄漏
+    let res;
+    
+    // 优化请求逻辑：entity为空时加载全量数据
+    if (entity.trim()) {
+      res = await api.getGraphDataByEntity(encodeURIComponent(entity.trim()));
+    } else {
+      res = await api.getFullGraphData ? await api.getFullGraphData() : await api.getGraphData();
+    }
+    
+    // 数据强容错处理
+    const data = res?.data || { nodes: [], edges: [] };
+    const formattedEdges = [];
+    
+    // 格式化边数据：兼容不同后端返回格式（from/to 或 source/target）
+    if (Array.isArray(data.edges)) {
+      formattedEdges.push(...data.edges.map(edge => ({
+        source: edge.source || edge.from || '未知实体',
+        target: edge.target || edge.to || '未知实体',
+        relation: edge.relation || edge.label || '相关'
+      })));
+    }
+    
+    // 过滤无效边
+    termsData.value = {
+      nodes: Array.isArray(data.nodes) ? data.nodes : [],
+      edges: formattedEdges.filter(edge => 
+        edge.source && edge.target && edge.relation && edge.source !== edge.target
+      )
+    };
+    
+    // 无数据提示
+    if (termsData.value.edges.length === 0) {
+      ElMessage.info(entity ? `未找到「${entity}」相关实体关系` : '暂无实体关系数据');
+    }
+  } catch (error) {
+    ElMessage.error(`加载词条数据失败：${error.message || '网络错误'}`);
+    console.error('词条数据加载错误：', error);
+    termsData.value = { nodes: [], edges: [] };
+  } finally {
+    loading.value = false;
+  }
+};
 
-    // 等待DOM完全渲染
+// 处理词条点击（功能逻辑不变）
+const handleTermClick = (entity) => {
+  if (!entity || !entity.trim()) return;
+  
+  searchEntity.value = entity.trim();
+  currentEntity.value = entity.trim();
+  emit('update:currentEntity', entity.trim());
+  
+  // 点击后保持在词条视图，更新数据
+  loadTermsData(entity.trim());
+};
+
+// 销毁图谱实例（功能逻辑不变）
+const destroyNetwork = () => {
+  if (network.value) {
+    try {
+      network.value.off('stabilizationIterationsDone');
+      network.value.off('click');
+      network.value.destroy();
+    } catch (e) {
+      console.warn('销毁图谱实例警告：', e);
+    } finally {
+      network.value = null;
+    }
+  }
+};
+
+// 检查容器有效性（功能逻辑不变）
+const checkContainerValidity = () => {
+  if (!graphRef.value) {
+    ElMessage.error('图谱容器不存在');
+    return false;
+  }
+
+  // 强制触发重绘
+  graphRef.value.style.display = 'none';
+  graphRef.value.offsetHeight;
+  graphRef.value.style.display = 'block';
+  
+  const rect = graphRef.value.getBoundingClientRect();
+  if (rect.width <= 10 || rect.height <= 10) {
+    graphRef.value.style.minWidth = '300px';
+    graphRef.value.style.minHeight = '300px';
+    return true;
+  }
+  
+  return true;
+};
+
+// 初始化图谱（功能逻辑不变）
+const initGraph = async (targetEntity = '', isFull = false) => {
+  if (viewMode.value !== 'graph') return;
+  
+  try {
+    loading.value = true;
+    destroyNetwork();
+
     await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-    // 1. 校验DOM容器
-    if (!graphRef.value) {
-      ElMessage.error('图谱容器不存在，无法初始化！');
-      loading.value = false;
-      return; // 终止执行，避免后续报错
+    if (!checkContainerValidity()) {
+      if (initRetryCount.value < 3) {
+        initRetryCount.value++;
+        ElMessage.info(`重试初始化图谱（${initRetryCount.value}/3）`);
+        setTimeout(() => initGraph(targetEntity, isFull), 800);
+        return;
+      } else {
+        initRetryCount.value = 0;
+        loading.value = false;
+        ElMessage.error('图谱初始化失败，请刷新页面重试');
+        return;
+      }
     }
+    initRetryCount.value = 0;
 
-    // 2. 校验容器尺寸
-    const rect = graphRef.value.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) {
-      ElMessage.error('图谱容器无有效尺寸，请检查布局！');
-      loading.value = false;
-      return; // 终止执行
-    }
-
-    // 3.确定当前实体（强制处理空值）
     let entity = typeof targetEntity === 'string' ? targetEntity.trim() : '';
-    // 关键：如果明确传递空字符串，强制使用空实体（覆盖父组件传递的实体）
     entity = targetEntity === '' ? '' : (entity || currentEntity.value || props.mainEntity);
     currentEntity.value = entity;
     emit('update:currentEntity', entity);
 
-    // 4. 获取图谱数据
     let res;
     try {
       if (entity) {
-        // 有实体，查实体子图
-        res = await api.getGraphDataByEntity(entity);
-      } else if (isFull) { 
-        // 显式要求全量数据 (对应显示全部按钮)
-        res = await api.getFullGraphData(); 
+        res = await api.getGraphDataByEntity(encodeURIComponent(entity));
+      } else if (isFull || !entity) { 
+        res = await api.getFullGraphData ? await api.getFullGraphData() : await api.getGraphData();
       } else {
-        // 默认初始化：只查核心节点 (Top N)
         res = await api.getGraphData();
       }
+      
+      // 同步更新词条数据
+      const data = res?.data || { nodes: [], edges: [] };
+      const formattedEdges = Array.isArray(data.edges) ? data.edges.map(edge => ({
+        source: edge.source || edge.from || '未知实体',
+        target: edge.target || edge.to || '未知实体',
+        relation: edge.relation || edge.label || '相关'
+      })).filter(edge => edge.source && edge.target && edge.relation) : [];
+      
+      termsData.value = {
+        nodes: Array.isArray(data.nodes) ? data.nodes : [],
+        edges: formattedEdges
+      };
     } catch (apiError) {
       ElMessage.error(`数据请求失败：${apiError.message}`);
       loading.value = false;
       return; 
     }
-    const { nodes, edges } = res.data;
+    
+    const { nodes = [], edges = [] } = res?.data || {};
 
-    // 5. 校验数据有效性
-    if (!nodes || !nodes.length) {
-      ElMessage.warning(entity ? `未找到「${entity}」相关图谱数据` : '暂无图谱数据');
-      loading.value = false;
-      return; // 无数据，终止执行
-    }
-
-    // 6. 格式化数据
-    const visNodes = new DataSet(
-      nodes.map(node => ({
-        id: node.id || node.label,
-        label: node.label || node.id,
+    const validNodes = nodes
+      .filter(node => node.id || node.label)
+      .map(node => ({
+        id: node.id || `node_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        label: node.label || node.id || '未知节点',
         shape: 'ellipse',
         size: 25,
         color: { 
-          background: node.id === entity ? '#67C23A' : '#409EFF',
-          border: node.id === entity ? '#529B2E' : '#1989FA' 
+          background: (node.id || node.label) === entity ? '#67C23A' : '#409EFF',
+          border: (node.id || node.label) === entity ? '#529B2E' : '#1989FA' 
         }
-      }))
-    );
+      }));
 
-    const visEdges = new DataSet(
-      edges.map(edge => ({
-        from: edge.from,
-        to: edge.to,
-        label: edge.label || edge.relation,
+    const nodeIds = validNodes.map(n => n.id);
+    const validEdges = edges
+      .filter(edge => {
+        const from = edge.from || edge.source;
+        const to = edge.to || edge.target;
+        return from && to && nodeIds.includes(from) && nodeIds.includes(to);
+      })
+      .map(edge => ({
+        from: edge.from || edge.source,
+        to: edge.to || edge.target,
+        label: edge.label || edge.relation || '',
         width: 2,
         color: '#999',
         arrows: { to: { enabled: true, scaleFactor: 0.7 } }
-      }))
-    );
+      }));
 
-    // 7. 图谱配置 (优化版)
+    if (validNodes.length === 0) {
+      ElMessage.warning(entity ? `未找到「${entity}」相关数据` : '暂无图谱数据');
+      loading.value = false;
+      return;
+    }
+
     const options = {
       nodes: { 
-        font: { size: 14, color: '#333' },
-        shape: 'dot', // 使用 dot 形状，配合 value 属性可以根据重要性改变大小
+        font: { size: 14, color: '#333', face: 'Arial' },
+        shape: 'dot',
         scaling: {
-          min: 10,
-          max: 30, // 核心节点最大尺寸
+          min: 15,
+          max: 35,
           label: { enabled: true, min: 14, max: 20 }
-        }
+        },
+        borderWidth: 2
       },
       edges: { 
-        font: { size: 10, align: 'middle', color: '#888' }, // 字体改小一点，颜色淡一点
-        color: { color: '#e2e2e2', highlight: '#409EFF' }, // 默认连线颜色淡化，减少视觉混乱
-        smooth: { type: 'continuous' } // 平滑曲线
+        font: { size: 10, align: 'middle', color: '#888', face: 'Arial' },
+        color: { color: '#e2e2e2', highlight: '#409EFF' },
+        smooth: { type: 'cubicBezier', forceDirection: 'horizontal' },
+        hoverWidth: 3
       },
       physics: {
         enabled: true,
-        // 使用 forceAtlas2Based 求解器，通常比 barnesHut 更适合展示复杂的网络，布局更分散
-        solver: 'forceAtlas2Based', 
+        solver: 'forceAtlas2Based',
         forceAtlas2Based: {
           theta: 0.5,
-          gravitationalConstant: -50, // 斥力，负值越大排斥越强
-          centralGravity: 0.01,       // 中心引力，越小越分散
-          springConstant: 0.08,
-          springLength: 100,
-          damping: 0.4,
-          avoidOverlap: 0.5           // 避免重叠
+          gravitationalConstant: -100,
+          centralGravity: 0.1,
+          springConstant: 0.1,
+          springLength: 120,
+          damping: 0.6,
+          avoidOverlap: 0.6
         },
         stabilization: {
           enabled: true,
-          iterations: 150, // 减少预计算次数，从500降到150，加快初始显示
+          iterations: 200,
           updateInterval: 25,
           onlyDynamicEdges: false,
           fit: true
@@ -221,103 +398,129 @@ const initGraph = async (targetEntity = '', isFull = false) => {
         dragNodes: true,
         zoomView: true,
         navigationButtons: false,
-        keyboard: true
+        keyboard: true,
+        selectable: true
+      },
+      layout: {
+        randomSeed: 42
       }
     };
 
-    // 8. 创建图谱实例（核心：确保实例创建成功）
     try {
-      network.value = new Network(graphRef.value, { nodes: visNodes, edges: visEdges }, options);
-    } catch (initError) {
-      ElMessage.error(`图谱实例创建失败：${initError.message}`);
-      loading.value = false;
-      return; // 实例创建失败，终止执行
-    }
+      graphRef.value.style.visibility = 'visible';
+      graphRef.value.style.opacity = '1';
+      
+      network.value = new Network(
+        graphRef.value, 
+        { 
+          nodes: new DataSet(validNodes), 
+          edges: new DataSet(validEdges) 
+        }, 
+        options
+      );
 
-    // 9. 绑定事件（关键：先校验network.value非空）
-    if (network.value) {
-      // 绑定稳定完成事件
       network.value.on('stabilizationIterationsDone', () => {
         loading.value = false;
-        network.value?.setOptions({ physics: { enabled: true } }); // 可选链操作
-        // 聚焦核心实体（增加非空校验）
-        if (entity && network.value) {
-          network.value.focus(entity, { scale: 1.2, animation: true });
+        network.value?.setOptions({
+          physics: {
+            enabled: true,
+            stabilization: { enabled: false },
+            forceAtlas2Based: { damping: 0.8 }
+          }
+        });
+        if (entity) {
+          const targetNode = validNodes.find(n => n.id === entity || n.label === entity);
+          if (targetNode && network.value) {
+            network.value.focus(targetNode.id, { scale: 1.3, animation: { duration: 1000 } });
+          }
         }
       });
 
-      // 绑定节点点击事件
       network.value.on('click', (params) => {
-        if (params.nodes.length > 0 && network.value) { // 非空校验
+        if (params.nodes.length > 0 && network.value) {
           const nodeId = params.nodes[0];
-          searchEntity.value = nodeId;
-          handleSearch(); // 直接调用，不传递参数
+          const node = validNodes.find(n => n.id === nodeId);
+          if (node) {
+            searchEntity.value = node.label;
+            handleSearch();
+          }
         }
       });
+
+    } catch (initError) {
+      console.error('图谱实例创建失败：', initError);
+      ElMessage.error(`图谱加载失败：${initError.message}`);
+      loading.value = false;
+      graphRef.value.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#999;">图谱加载失败，请点击"重新加载"重试</div>';
+      return;
     }
 
   } catch (error) {
-    ElMessage.error(`图谱初始化失败：${error.message}`);
+    console.error('图谱初始化总错误：', error);
+    ElMessage.error(`系统错误：${error.message}`);
     loading.value = false;
-    destroyNetwork(); // 异常时销毁实例
+    destroyNetwork();
   }
 };
 
-// 处理搜索（移除参数，避免接收KeyboardEvent）
+// 处理搜索（功能逻辑不变）
 const handleSearch = () => {
   let entity = searchEntity.value.trim();
-  // 过滤非法字符
   entity = entity.replace(/\[object .+\]/g, '').trim();
   if (!entity) {
     ElMessage.warning('请输入有效的节点名称！');
     return;
   }
   currentEntity.value = entity;
-  initGraph(entity);
+  emit('update:currentEntity', entity);
+  
+  if (viewMode.value === 'graph') {
+    initGraph(entity);
+  } else {
+    loadTermsData(entity);
+  }
 };
 
-// 显示全量图谱（完整重置状态）
+// 显示全量数据（功能逻辑不变）
 const showAllGraph = () => {
-  // 1. 清空搜索框
   searchEntity.value = '';
-  // 2. 重置当前实体（关键：彻底清除实体状态）
   currentEntity.value = '';
-  // 3. 通知父组件清除实体（确保联动状态一致）
   emit('update:currentEntity', '');
-  // 4. 强制加载全量数据（传递空字符串明确标识全量）
-  initGraph('', true);
+  
+  if (viewMode.value === 'graph') {
+    initGraph('', true);
+  } else {
+    loadTermsData('');
+  }
 };
-// ================= 新增功能：导出图谱图片 =================
+
+// 导出图谱图片（功能逻辑不变）
 const exportGraphImage = () => {
-  if (!network.value || !graphRef.value) {
-    ElMessage.warning('图谱尚未加载，无法导出');
+  if (viewMode !== 'graph' || !network.value || !graphRef.value) {
+    ElMessage.warning('请在图谱视图下操作，且确保图谱已加载');
     return;
   }
   
   try {
-    // 获取 canvas 元素
     const canvas = graphRef.value.querySelector('canvas');
     if (!canvas) {
-      ElMessage.error('无法获取画布内容');
+      ElMessage.error('无法获取图谱画布');
       return;
     }
 
-    // 转换为 Data URL (PNG格式)
-    const imgUrl = canvas.toDataURL('image/png');
-    
-    // 创建下载链接
+    const imgUrl = canvas.toDataURL('image/png', 1.0);
     const link = document.createElement('a');
     link.href = imgUrl;
-    // 文件名：如果有实体名则用实体名，否则用默认名
     const fileName = currentEntity.value 
       ? `knowledge-graph-${currentEntity.value}.png` 
       : 'frontend-knowledge-graph.png';
     link.download = fileName;
     
-    // 触发下载
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    setTimeout(() => {
+      document.body.removeChild(link);
+    }, 100);
     
     ElMessage.success('图谱图片已导出');
   } catch (e) {
@@ -325,34 +528,34 @@ const exportGraphImage = () => {
   }
 };
 
-//导出图谱 JSON
+// 导出数据（功能逻辑不变）
 const exportGraphJSON = () => {
-  if (!network.value) {
-    ElMessage.warning('图谱尚未加载，无法导出');
+  let exportData;
+  
+  if (viewMode === 'graph' && network.value) {
+    exportData = {
+      nodes: network.value.body.data.nodes.get(),
+      edges: network.value.body.data.edges.get()
+    };
+  } else if (viewMode === 'terms' && termsData.value) {
+    exportData = termsData.value;
+  } else {
+    ElMessage.warning('数据未加载，无法导出');
     return;
   }
 
   try {
-    // 从 network 实例中获取当前的节点和边数据
-    // network.body.data.nodes 返回的是 DataSet，需要调用 .get() 转为数组
-    const nodesData = network.value.body.data.nodes.get();
-    const edgesData = network.value.body.data.edges.get();
-
     const data = {
       timestamp: new Date().toISOString(),
       entity: currentEntity.value || 'ALL',
-      nodes: nodesData,
-      edges: edgesData
+      nodes: exportData.nodes || [],
+      edges: exportData.edges || []
     };
 
-    // 转换为 JSON 字符串
     const jsonStr = JSON.stringify(data, null, 2);
-    
-    // 创建 Blob 对象
-    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const blob = new Blob([jsonStr], { type: 'application/json; charset=utf-8' });
     const url = URL.createObjectURL(blob);
     
-    // 创建下载链接
     const link = document.createElement('a');
     link.href = url;
     const fileName = currentEntity.value 
@@ -362,63 +565,77 @@ const exportGraphJSON = () => {
     
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url); // 释放内存
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
 
-    ElMessage.success('图谱数据已导出');
+    ElMessage.success('数据已导出');
   } catch (e) {
     ElMessage.error('导出 JSON 失败：' + e.message);
   }
 };
 
-// 监听问答面板实体变化（增加防抖）
+// 监听父组件实体变化（功能逻辑不变）
 watch(
   () => props.mainEntity,
   (newEntity) => {
-    if (!currentEntity.value) {
-      initGraph(newEntity);
+    if (newEntity && newEntity.trim() && (!currentEntity.value || currentEntity.value !== newEntity.trim())) {
+      currentEntity.value = newEntity.trim();
+      if (viewMode.value === 'graph') {
+        initGraph(newEntity.trim());
+      } else {
+        loadTermsData(newEntity.trim());
+      }
     }
   },
-  { immediate: true, flush: 'post' } // 延迟执行，确保DOM更新
+  { immediate: true, flush: 'post' }
 );
 
-// 挂载后初始化（增加延迟，确保DOM渲染完成）
+// 挂载后初始化（功能逻辑不变）
 onMounted(async () => {
   await nextTick();
   setTimeout(() => {
-    initGraph();
-  }, 300); // 延迟300ms，兼容慢渲染场景
-
-  // 窗口resize监听（增加非空校验）
-  window.addEventListener('resize', () => {
-    if (network.value) {
-      network.value.redraw();
+    if (viewMode.value === 'graph') {
+      initGraph(props.mainEntity);
+    } else {
+      loadTermsData(props.mainEntity);
     }
+  }, 500);
+
+  // 窗口resize监听
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (network.value && viewMode.value === 'graph') {
+        network.value.redraw();
+      }
+    }, 300);
   });
-  // 新增：绑定全屏事件监听
+
+  // 全屏事件监听
   document.addEventListener('fullscreenchange', handleFullScreenChange);
   document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
   document.addEventListener('msfullscreenchange', handleFullScreenChange);
 });
-// 新增：全屏切换核心方法
+
+// 全屏切换（功能逻辑不变）
 const toggleFullScreen = () => {
-  // 获取图谱容器DOM
   const container = document.querySelector('.graph-container');
   if (!container) return;
 
   try {
     if (!isFullScreen.value) {
-      // 进入全屏（兼容多浏览器）
       if (container.requestFullscreen) {
         container.requestFullscreen();
-      } else if (container.webkitRequestFullscreen) { // Chrome/Safari
+      } else if (container.webkitRequestFullscreen) {
         container.webkitRequestFullscreen();
-      } else if (container.msRequestFullscreen) { // IE/Edge
+      } else if (container.msRequestFullscreen) {
         container.msRequestFullscreen();
       }
-      ElMessage.success('已进入图谱全屏模式，按ESC键可退出');
+      ElMessage.success('已进入全屏模式，按ESC键可退出');
     } else {
-      // 退出全屏（兼容多浏览器）
       if (document.exitFullscreen) {
         document.exitFullscreen();
       } else if (document.webkitExitFullscreen) {
@@ -426,53 +643,72 @@ const toggleFullScreen = () => {
       } else if (document.msExitFullscreen) {
         document.msExitFullscreen();
       }
-      ElMessage.info('已退出图谱全屏模式');
+      ElMessage.info('已退出全屏模式');
     }
   } catch (error) {
     ElMessage.error(`全屏操作失败：${error.message}`);
   }
 };
 
-// 新增：监听全屏状态变化（同步isFullScreen，并重绘图谱）
+// 监听全屏状态变化（功能逻辑不变）
 const handleFullScreenChange = () => {
-  // 检测当前是否处于全屏状态（兼容多浏览器）
   const fullscreenElement = document.fullscreenElement || 
                             document.webkitFullscreenElement || 
                             document.msFullscreenElement;
   isFullScreen.value = !!fullscreenElement;
   
-  // 全屏状态变化时重绘图谱，避免尺寸异常
-  if (network.value) {
-    network.value.redraw();
+  if (network.value && viewMode.value === 'graph') {
+    setTimeout(() => {
+      network.value.redraw();
+    }, 300);
   }
 };
-// 卸载时销毁（增加非空校验）
+
+// 卸载时清理（功能逻辑不变）
 onUnmounted(() => {
   destroyNetwork();
   window.removeEventListener('resize', () => {});
-  // 移除全屏监听
   document.removeEventListener('fullscreenchange', handleFullScreenChange);
+  document.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
+  document.removeEventListener('msfullscreenchange', handleFullScreenChange);
 });
 </script>
 
 <style scoped>
-/* 原有loading样式保留 */
-.loading {
-  position: absolute;
-  top: 0;
-  left: 0;
+/* 容器样式 */
+.graph-wrapper {
+  position: relative;
   width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  font-size: 16px;
-  color: #666;
+  height: 550px;
+  box-sizing: border-box;
 }
 
-/* 新增：全屏状态下的容器样式 */
+.graph-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+/* 加载提示（仅右上角） */
+.loading-tip {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  z-index: 20;
+  backdrop-filter: blur(2px);
+}
+
+/* 全屏样式 */
 .graph-container.fullscreen {
   position: fixed !important;
   top: 0 !important;
@@ -484,13 +720,126 @@ onUnmounted(() => {
   border: none !important;
   margin: 0 !important;
   padding: 20px !important;
-  box-sizing: border-box;
 }
 
-/* 深度选择器确保 vis-network 占满 */
 .graph-container.fullscreen :deep(.vis-network) {
   width: 100% !important;
   height: 100% !important;
   outline: none;
+}
+
+/* 词条视图样式 */
+.terms-container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.terms-header {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.terms-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.terms-header p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.terms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 词条加载骨架屏 */
+.terms-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loading-skeleton {
+  height: 48px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 6px;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.term-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  flex-wrap: wrap;
+  transition: background-color 0.3s;
+}
+
+.term-item:hover {
+  background: #eef2f7;
+}
+
+.term-node {
+  padding: 6px 12px;
+  background: #e8f4fd;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #1989FA;
+}
+
+.term-relation {
+  padding: 6px 12px;
+  color: #666;
+  flex: 1;
+  min-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* 修复vis-network样式冲突 */
+:deep(.vis-network) {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+:deep(.vis-node) {
+  transition: all 0.2s;
+}
+
+:deep(.vis-node:hover) {
+  scale: 1.05;
+}
+
+:deep(.vis-edge-text) {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  padding: 2px 4px !important;
+  border-radius: 3px !important;
 }
 </style>

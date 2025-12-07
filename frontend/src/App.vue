@@ -22,9 +22,14 @@
               （当前聚焦：{{ currentEntity }}）
             </span>
           </h2>
+          <!-- 增加图谱容器加载状态 -->
+          <div v-if="!graphLoaded" class="graph-loading">
+            
+          </div>
           <GraphVisual 
             :main-entity="mainEntity" 
             @update:currentEntity="handleCurrentEntityChange"
+            @graph-loaded="graphLoaded = true"
           />
         </div>
       </el-col>
@@ -41,6 +46,7 @@ import GraphVisual from './components/GraphVisual.vue';
 // 核心实体状态（联动问答和图谱）
 const mainEntity = ref(''); // 来自问答面板
 const currentEntity = ref(''); // 来自图谱面板
+const graphLoaded = ref(false); // 图谱容器加载状态
 
 // 处理问答面板实体变化
 const handleMainEntityChange = (entity) => {
@@ -57,7 +63,6 @@ const handleCurrentEntityChange = (entity) => {
 </script>
 
 <style>
-/* 基础样式 */
 #app {
   max-width: 1400px;
   margin: 0 auto;
@@ -71,10 +76,9 @@ const handleCurrentEntityChange = (entity) => {
   margin-bottom: 30px;
 }
 
-/* 布局样式：确保子元素有足够空间 */
 .main-layout {
   width: 100%;
-  min-height: 700px; /* 父容器最小高度 */
+  min-height: 700px;
   display: flex;
 }
 
@@ -83,21 +87,18 @@ const handleCurrentEntityChange = (entity) => {
   display: flex;
 }
 
-/* 面板样式：固定高度，避免挤压 */
 .panel {
   background: #f9f9f9;
   padding: 20px;
   border-radius: 8px;
   width: 100%;
-  box-sizing: border-box; /* 关键：padding不影响整体尺寸 */
+  box-sizing: border-box;
 }
 
-/* 问答面板高度 */
 .qa-panel {
   height: 650px;
 }
 
-/* 图谱面板高度（与问答面板一致） */
 .graph-panel {
   height: 650px;
 }
@@ -108,5 +109,15 @@ const handleCurrentEntityChange = (entity) => {
   border-bottom: 1px solid #e6e6e6;
   padding-bottom: 10px;
   margin-bottom: 20px;
+}
+
+/* 新增图谱加载样式 */
+.graph-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  z-index: 5;
 }
 </style>

@@ -10,10 +10,10 @@ import re
 # 初始化FastAPI应用
 app = FastAPI(title="前端技术知识图谱问答API")
 
-# 配置跨域（解决前后端跨域问题）
+# 配置跨域
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 生产环境需指定具体域名
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,11 +22,10 @@ app.add_middleware(
 # 初始化知识图谱
 kg = FrontendKnowledgeGraph()
 
-# 修改请求模型
+# 请求模型
 class QuestionRequest(BaseModel):
     question: str
-    mode: str = "quick"  # 新增模式参数，默认快速回答
-
+    mode: str = "quick"  # 模式参数，默认快速回答
 
 # API接口
 @app.get("/api/graph-data")
@@ -35,19 +34,17 @@ async def get_graph_data(limit: int = 60):
     if not kg:
         raise HTTPException(status_code=500, detail="图谱未初始化，请检查后端日志")
     try:
-        # 这里改成 get_top_graph_data，并传入 limit
         data = kg.get_top_graph_data(limit=limit)
         return {"code": 200, "data": data, "msg": "success"}
     except Exception as e:
-        print(f"获取图谱数据出错: {e}") # 打印错误日志
+        print(f"获取图谱数据出错: {e}")
         raise HTTPException(status_code=500, detail=f"获取图谱数据失败：{str(e)}")
 
-# 修改问答接口
+# 问答接口
 @app.post("/api/qa")
 async def qa(request: QuestionRequest):
     """问答接口"""
     try:
-        # 将模式参数传递给回答方法
         result = kg.answer_question(request.question, request.mode)
         return {"code": 200, "data": result, "msg": "success"}
     except Exception as e:
@@ -59,6 +56,7 @@ async def get_full_graph_data():
         return {"code": 200, "data": kg.get_graph_data(), "msg": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取全量数据失败：{str(e)}")
+
 @app.get("/api/entities")
 async def get_entities():
     """获取所有实体列表"""
@@ -68,12 +66,7 @@ async def get_entities():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取实体列表失败：{str(e)}")
 
-# 启动服务
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-
-# 在main.py中新增接口，支持按实体筛选图谱数据
+# 按实体筛选图谱数据
 @app.get("/api/graph-data/entity/{entity}")
 async def get_graph_data_by_entity(entity: str):
     """根据实体获取相关的图谱数据"""
@@ -107,7 +100,7 @@ async def get_graph_data_by_entity(entity: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取实体图谱数据失败：{str(e)}")
 
-# 新增：模糊搜索实体接口
+# 模糊搜索实体接口
 @app.get("/api/graph-data/entity/fuzzy/{keyword}")
 async def fuzzy_search_entity(keyword: str):
     """根据关键词模糊匹配实体"""
@@ -141,3 +134,8 @@ async def fuzzy_search_entity(keyword: str):
         return {"code": 200, "data": {"nodes": nodes, "edges": related_edges}, "msg": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"模糊搜索失败：{str(e)}")
+
+# 启动服务
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

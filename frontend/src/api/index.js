@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const service = axios.create({
   baseURL: 'http://localhost:8000/api',
-  timeout: 60000, // 延长超时时间
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -24,7 +24,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data;
-    console.log('响应数据：', res); // 打印响应，方便调试
+    console.log('响应数据：', res);
     if (res.code !== 200) {
       console.error('请求失败：', res.msg);
       return Promise.reject(new Error(res.msg || '请求失败'));
@@ -41,14 +41,12 @@ export const api = {
   getGraphData() {
     return service.get('/graph-data');
   },
-  // 新增：按实体获取图谱数据
   getFullGraphData() {
-    return service.get('/graph-data/full'); // 获取全量数据
+    return service.get('/graph-data/full');
   },
   getGraphDataByEntity(entity) {
     return service.get(`/graph-data/entity/${encodeURIComponent(entity)}`);
   },
-  // 新增：模糊搜索接口
   fuzzySearchEntity(keyword) {
     return service.get(`/graph-data/entity/fuzzy/${encodeURIComponent(keyword)}`);
   },
