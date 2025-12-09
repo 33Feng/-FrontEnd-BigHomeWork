@@ -139,7 +139,56 @@ import { api } from '../api/index';
 import { Network, DataSet } from 'vis-network/standalone';
 import { ElButton, ElMessage, ElInput, ElIcon } from 'element-plus';
 import { Fullscreen, Picture, Download, ArrowDown, Loading, ArrowLeft } from '@element-plus/icons-vue';
+//关系颜色映射函数 采用模糊匹配
+const getRelationColor = (relation) => {
+  const rel = (relation || '').trim();
+  if (!rel) return '#A9A9A9'; // 空值默认灰
 
+  // 【橙色系】版本、历史、时间相关
+  // 覆盖：核心版本、版本控制、历史版本等
+  if (['版本', '历史', '旧', 'Time'].some(k => rel.includes(k))) {
+    return '#E6A23C'; 
+  }
+
+  // 【红色系】工具、框架、工程化、生态相关
+  // 覆盖：适配框架、UI框架、构建工具、包管理工具、测试工具、编辑器、调试预览、容器化、部署、CI/CD
+  if (['框架', '工具', '编辑器', '管理', '容器', '部署', '规范', 'CI/CD', '处理器', '生态', '调试', '服务', 'Environment'].some(k => rel.includes(k))) {
+    return '#F56C6C';
+  }
+
+  // 【青色系】性能、网络、安全、浏览器环境相关
+  // 覆盖：性能优化、加载性能、安全机制、权限机制、网络请求、核心协议、浏览器API、错误处理、异常
+  if (['优化', '性能', '加载', '渲染', '安全', '权限', '协议', '请求', '异步', '错误', '异常', '网络', 'Web', '客户端', '服务端', '浏览器', 'HTTP', 'DNS'].some(k => rel.includes(k))) {
+    return '#00BCD4';
+  }
+
+  // 【金色/黄色系】事件、交互、通信、路由
+  // 覆盖：窗口事件、表单事件、组件通信、路由管理、交互标签
+  if (['事件', '通信', '路由', '交互', '监听', '导航', '行为', 'DOM'].some(k => rel.includes(k))) {
+    return '#FFD700'; // 金色，比亮黄在白底上更清晰
+  }
+
+  // 【紫色系】高阶概念、底层机制、模块化、抽象
+  // 覆盖：核心机制、响应式原理、运行环境、作用域、上下文、模块化、依赖、继承、超集、代理、反射
+  if (['机制', '原理', '模式', '环境', '作用域', '上下文', '模块', '依赖', '继承', '超集', '代理', '反射', '型变', '约束'].some(k => rel.includes(k))) {
+    return '#9C27B0';
+  }
+
+  // 【绿色系】语法细节、代码元素、属性、样式
+  // 覆盖：元素类型、标签、属性、选择器、样式、语法、指令、方法、函数、声明、规则、类型、参数、变量、钩子、插槽
+  if (['属性', '标签', '选择器', '样式', '语法', '指令', '方法', '函数', '声明', '规则', '类型', '参数', '变量', '操作', '钩子', '元素', '插槽', '装饰器', '泛型', '接口', '枚举', '数组', '对象', '字符串', '组件', '值'].some(k => rel.includes(k))) {
+    return '#67C23A';
+  }
+
+  // 【蓝色系】核心结构、定义、标准、顶层分类 
+  // 覆盖：核心特性、核心组成、核心环节、核心领域、标准、组织、定义、概念、维度、进阶、方案、优势
+  if (['核心', '组成', '环节', '领域', '标准', '组织', '定义', '概念', '维度', '进阶', '方案', '优势'].some(k => rel.includes(k))) {
+    return '#409EFF';
+  }
+
+  // 8. 默认颜色 (深灰色)
+  return '#909399';
+};
 // 接收父组件传递的核心实体
 const props = defineProps({
   mainEntity: {
@@ -465,12 +514,10 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
     }
     
     const { nodes = [], edges = [] } = res?.data || {};
-
-    // 格式化并过滤边数据（仅保留有效边，relation宽松判断）
-    const formattedEdges = Array.isArray(edges) ? edges.map(edge => ({
+    // 预处理边：格式化文本
+    const rawEdges = Array.isArray(edges) ? edges.map(edge => ({
       source: formatEmptyText(edge.source || edge.from),
       target: formatEmptyText(edge.target || edge.to),
-      // 关系字段单独处理，确保后端CSV中的relation正确显示
       relation: formatEmptyText(edge.relation || edge.label, EMPTY_RELATION_PLACEHOLDER, true)
     })).filter(edge => 
       edge.source && edge.target && edge.relation && 
@@ -479,30 +526,75 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
       edge.target !== EMPTY_TEXT_PLACEHOLDER
     ) : [];
 
-    // 基于有效边提取有效节点（避免大量"无文本内容"节点）
+    // 颜色映射表 (Target Node -> Color)
+    const nodeColorMap = new Map();
+    
+    rawEdges.forEach(edge => {
+      // 获取这条边对应的颜色
+      const color = getRelationColor(edge.relation);
+      
+      //目标节点继承边的颜色
+      // 如果一个节点被多条边指向，这里简单的逻辑是“后来的覆盖前面的”
+      if (edge.target !== entity) { // 只有非中心节点才变色
+          nodeColorMap.set(edge.target, color);
+      }
+    });
+
+    // 确定有效节点标签集合
     const validNodeLabels = new Set();
-    formattedEdges.forEach(edge => {
+    rawEdges.forEach(edge => {
       validNodeLabels.add(edge.source);
       validNodeLabels.add(edge.target);
     });
 
-    // 处理节点数据：仅保留有效边关联的节点，格式化空文本/乱码
+    // 处理节点数据 (应用颜色)
     let validNodes = nodes
       .filter(node => node.id || node.label)
-      .map(node => ({
-        id: node.id || `node_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-        label: formatEmptyText(node.label || node.id), // 格式化空文本/乱码
-        shape: 'ellipse',
-        size: 25,
-        color: { 
-          background: (node.id || formatEmptyText(node.label || node.id)) === entity ? '#67C23A' : '#409EFF',
-          border: (node.id || formatEmptyText(node.label || node.id)) === entity ? '#529B2E' : '#1989FA' 
-        },
-        // 节点物理属性：启用碰撞，设置质量
-        physics: true,
-        mass: 1.5 // 增加节点质量，使碰撞更明显
-      }))
-      // 过滤：仅保留有效边关联的节点，减少"无文本内容"节点
+      .map(node => {
+        const label = formatEmptyText(node.label || node.id);
+        const isCenter = label === entity;
+        
+        //颜色决策逻辑 
+        let bgColor, borderColor;
+
+        if (isCenter) {
+            // 情况A: 中心节点（当前搜索的），保持显眼的绿色
+            bgColor = '#67C23A'; // Element Plus Success Green
+            borderColor = '#529B2E';
+        } else if (nodeColorMap.has(label)) {
+            // 情况B: 是某个边的目标节点，使用计算好的颜色
+            bgColor = nodeColorMap.get(label);
+            borderColor = bgColor; // 边框同色
+        } else {
+            // 情况C: 既不是中心也不是目标（可能是源节点或孤立点），使用默认蓝
+            bgColor = '#409EFF'; 
+            borderColor = '#1989FA';
+        }
+        // ------------------
+
+        return {
+          id: node.id || `node_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          label: label,
+          shape: 'dot', 
+          size: isCenter ? 35 : 20, 
+          font: { 
+            size: isCenter ? 16 : 14, 
+            color: isCenter ? '#000' : '#333', 
+            strokeWidth: 2, // 文字描边，防背景色干扰
+            strokeColor: '#fff'
+          },
+          color: { 
+            background: bgColor,
+            border: borderColor,
+            highlight: {
+                background: bgColor,
+                border: '#000' // 点击高亮时加个黑框
+            }
+          },
+          physics: true,
+          mass: isCenter ? 2 : 1 // 中心节点质量大一点，稳住重心
+        };
+      })
       .filter(node => validNodeLabels.has(node.label) && node.label !== EMPTY_TEXT_PLACEHOLDER);
 
     // 初始状态（非全屏、非搜索、非强制全屏）只显示前15个关键节点
@@ -528,11 +620,10 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
       });
     }
 
-    const nodeIds = validNodes.map(n => n.id);
     const nodeLabelMap = new Map(validNodes.map(n => [n.label, n.id])); // 标签到ID的映射
 
     // 过滤并格式化边数据（确保边连接的节点存在于当前节点列表）
-    const validEdges = formattedEdges
+    const validEdges = rawEdges
       .filter(edge => 
         nodeLabelMap.has(edge.source) && 
         nodeLabelMap.has(edge.target)
@@ -540,14 +631,22 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
       .map(edge => {
         // 为每条边生成随机但合理的物理参数，与节点共享同一碰撞引擎
         const randomness = 0.6 + Math.random() * 0.4; // 0.6-1.0之间的随机因子
-        
+        //获取当前边的颜色
+        const edgeColor = getRelationColor(edge.relation);
         return {
           from: nodeLabelMap.get(edge.source),
           to: nodeLabelMap.get(edge.target),
           label: edge.relation, // 直接使用后端返回的relation，不修改
-          width: 2,
-          color: '#999',
-          arrows: { to: { enabled: true, scaleFactor: 0.7 } },
+          width: 0.8,
+          //使用动态颜色
+          color: {
+            color: edgeColor,      // 常规颜色
+            highlight: edgeColor,  // 选中/高亮时的颜色
+            hover: edgeColor,      // 悬停时的颜色
+            inherit: false,        // 禁止继承节点颜色，强制使用边自己的颜色
+            opacity: 0.5
+          },
+          arrows: { to: { enabled: true, scaleFactor: 0.5 } },
           // 边的物理属性：启用物理碰撞，与节点使用相同的物理引擎
           physics: true,
           // 弹簧参数（控制边的拉力和长度）
@@ -596,7 +695,7 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
         solver: 'forceAtlas2Based', // 统一使用forceAtlas2Based引擎
         forceAtlas2Based: {
           theta: 0.5,
-          gravitationalConstant: -300, // 增强全局排斥力
+          gravitationalConstant: -500, // 增强全局排斥力
           centralGravity: 0.08,
           springConstant: 0, // 禁用全局弹簧参数，使用边的独立参数
           springLength: 0, // 禁用全局弹簧长度，使用边的独立参数
