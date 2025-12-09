@@ -5,7 +5,7 @@
       
       <!-- 右侧功能按钮组：视图切换 + 导出 + 全屏 -->
       <div style="display: flex; gap: 10px; align-items: center;">
-        <!-- 视图切换按钮（移至此处，保持蓝绿切换逻辑） -->
+        <!-- 视图切换按钮 -->
         <el-button 
           :type="viewMode === 'graph' ? 'success' : 'primary'" 
           @click="toggleViewMode"
@@ -36,7 +36,7 @@
       </div>
     </div>
 
-    <!-- 搜索区域（独立一行，不被压缩） -->
+    <!-- 搜索区域 -->
     <div class="search-bar" style="margin-bottom: 10px; display: flex; gap: 10px;">
       <el-input
         v-model="searchEntity"
@@ -51,7 +51,7 @@
 
     <!-- 图谱/词条容器 -->
     <div :class="['graph-container', { 'fullscreen': isFullScreen }]" style="width: 100%; height: 500px; position: relative; overflow: hidden;">
-      <!-- 仅保留右上角加载提示 -->
+      <!-- 加载提示 -->
       <div v-if="loading" class="loading-tip">
         <el-icon style="margin-right: 5px;"><Loading /></el-icon>
         {{ currentEntity ? `加载「${currentEntity}」数据...` : '加载中...' }}
@@ -132,20 +132,21 @@ const props = defineProps({
 });
 
 // 向父组件发送当前选中的实体
-const emit = defineEmits(['update:currentEntity']);
+const emit = defineEmits(['update:currentEntity', 'graph-loaded']);
 
 // 响应式数据
 const graphRef = ref(null);
 const network = ref(null); // 图谱实例
-const loading = ref(false); // 加载状态（默认false）
+const loading = ref(false); // 加载状态
 const searchEntity = ref('');
 const currentEntity = ref('');
 const isFullScreen = ref(false);
 const viewMode = ref('graph'); // 视图模式：graph/terms
 const termsData = ref({ nodes: [], edges: [] }); // 词条数据
 const initRetryCount = ref(0); // 初始化重试计数器
+const isShowingFull = ref(false); // 是否显示全部节点
 
-// 切换视图模式（功能逻辑不变）
+// 切换视图模式
 const toggleViewMode = () => {
   const oldMode = viewMode.value;
   viewMode.value = viewMode.value === 'graph' ? 'terms' : 'graph';
@@ -163,24 +164,24 @@ const toggleViewMode = () => {
   }
 };
 
-// 加载词条数据（功能逻辑不变）
+// 加载词条数据
 const loadTermsData = async (entity = '') => {
   try {
     loading.value = true;
     let res;
     
-    // 优化请求逻辑：entity为空时加载全量数据
+    // 优化请求逻辑：entity为空时加载核心数据
     if (entity.trim()) {
       res = await api.getGraphDataByEntity(encodeURIComponent(entity.trim()));
     } else {
-      res = await api.getFullGraphData ? await api.getFullGraphData() : await api.getGraphData();
+      res = await api.getGraphData();
     }
     
     // 数据强容错处理
     const data = res?.data || { nodes: [], edges: [] };
     const formattedEdges = [];
     
-    // 格式化边数据：兼容不同后端返回格式（from/to 或 source/target）
+    // 格式化边数据：兼容不同后端返回格式
     if (Array.isArray(data.edges)) {
       formattedEdges.push(...data.edges.map(edge => ({
         source: edge.source || edge.from || '未知实体',
@@ -210,7 +211,7 @@ const loadTermsData = async (entity = '') => {
   }
 };
 
-// 处理词条点击（功能逻辑不变）
+// 处理词条点击
 const handleTermClick = (entity) => {
   if (!entity || !entity.trim()) return;
   
@@ -222,7 +223,7 @@ const handleTermClick = (entity) => {
   loadTermsData(entity.trim());
 };
 
-// 销毁图谱实例（功能逻辑不变）
+// 销毁图谱实例
 const destroyNetwork = () => {
   if (network.value) {
     try {
@@ -237,7 +238,7 @@ const destroyNetwork = () => {
   }
 };
 
-// 检查容器有效性（功能逻辑不变）
+// 检查容器有效性
 const checkContainerValidity = () => {
   if (!graphRef.value) {
     ElMessage.error('图谱容器不存在');
@@ -259,8 +260,8 @@ const checkContainerValidity = () => {
   return true;
 };
 
-// 初始化图谱（功能逻辑不变）
-const initGraph = async (targetEntity = '', isFull = false) => {
+// 初始化图谱
+const initGraph = async (targetEntity = '', forceFull = false) => {
   if (viewMode.value !== 'graph') return;
   
   try {
@@ -274,7 +275,7 @@ const initGraph = async (targetEntity = '', isFull = false) => {
       if (initRetryCount.value < 3) {
         initRetryCount.value++;
         ElMessage.info(`重试初始化图谱（${initRetryCount.value}/3）`);
-        setTimeout(() => initGraph(targetEntity, isFull), 800);
+        setTimeout(() => initGraph(targetEntity, forceFull), 800);
         return;
       } else {
         initRetryCount.value = 0;
@@ -292,12 +293,15 @@ const initGraph = async (targetEntity = '', isFull = false) => {
 
     let res;
     try {
+      // 根据是否全屏或强制全屏决定加载核心还是全部数据
       if (entity) {
         res = await api.getGraphDataByEntity(encodeURIComponent(entity));
-      } else if (isFull || !entity) { 
+      } else if (isFullScreen.value || forceFull) {
         res = await api.getFullGraphData ? await api.getFullGraphData() : await api.getGraphData();
+        isShowingFull.value = true;
       } else {
         res = await api.getGraphData();
+        isShowingFull.value = false;
       }
       
       // 同步更新词条数据
@@ -421,6 +425,7 @@ const initGraph = async (targetEntity = '', isFull = false) => {
 
       network.value.on('stabilizationIterationsDone', () => {
         loading.value = false;
+        emit('graph-loaded');
         network.value?.setOptions({
           physics: {
             enabled: true,
@@ -463,7 +468,7 @@ const initGraph = async (targetEntity = '', isFull = false) => {
   }
 };
 
-// 处理搜索（功能逻辑不变）
+// 处理搜索
 const handleSearch = () => {
   let entity = searchEntity.value.trim();
   entity = entity.replace(/\[object .+\]/g, '').trim();
@@ -481,20 +486,21 @@ const handleSearch = () => {
   }
 };
 
-// 显示全量数据（功能逻辑不变）
+// 显示核心节点（默认状态）
 const showAllGraph = () => {
   searchEntity.value = '';
   currentEntity.value = '';
   emit('update:currentEntity', '');
   
+  // 显示核心节点，不进入全屏
   if (viewMode.value === 'graph') {
-    initGraph('', true);
+    initGraph('', false);
   } else {
     loadTermsData('');
   }
 };
 
-// 导出图谱图片（功能逻辑不变）
+// 导出图谱图片
 const exportGraphImage = () => {
   if (viewMode !== 'graph' || !network.value || !graphRef.value) {
     ElMessage.warning('请在图谱视图下操作，且确保图谱已加载');
@@ -528,7 +534,7 @@ const exportGraphImage = () => {
   }
 };
 
-// 导出数据（功能逻辑不变）
+// 导出数据
 const exportGraphJSON = () => {
   let exportData;
   
@@ -576,7 +582,7 @@ const exportGraphJSON = () => {
   }
 };
 
-// 监听父组件实体变化（功能逻辑不变）
+// 监听父组件实体变化
 watch(
   () => props.mainEntity,
   (newEntity) => {
@@ -592,7 +598,7 @@ watch(
   { immediate: true, flush: 'post' }
 );
 
-// 挂载后初始化（功能逻辑不变）
+// 挂载后初始化
 onMounted(async () => {
   await nextTick();
   setTimeout(() => {
@@ -620,19 +626,32 @@ onMounted(async () => {
   document.addEventListener('msfullscreenchange', handleFullScreenChange);
 });
 
-// 全屏切换（功能逻辑不变）
+// 全屏切换
 const toggleFullScreen = () => {
   const container = document.querySelector('.graph-container');
   if (!container) return;
 
   try {
     if (!isFullScreen.value) {
-      if (container.requestFullscreen) {
-        container.requestFullscreen();
-      } else if (container.webkitRequestFullscreen) {
-        container.webkitRequestFullscreen();
-      } else if (container.msRequestFullscreen) {
-        container.msRequestFullscreen();
+      // 进入全屏前加载全部数据
+      if (viewMode.value === 'graph' && !isShowingFull.value) {
+        initGraph('', true).then(() => {
+          if (container.requestFullscreen) {
+            container.requestFullscreen();
+          } else if (container.webkitRequestFullscreen) {
+            container.webkitRequestFullscreen();
+          } else if (container.msRequestFullscreen) {
+            container.msRequestFullscreen();
+          }
+        });
+      } else {
+        if (container.requestFullscreen) {
+          container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+          container.msRequestFullscreen();
+        }
       }
       ElMessage.success('已进入全屏模式，按ESC键可退出');
     } else {
@@ -650,12 +669,20 @@ const toggleFullScreen = () => {
   }
 };
 
-// 监听全屏状态变化（功能逻辑不变）
+// 监听全屏状态变化
 const handleFullScreenChange = () => {
   const fullscreenElement = document.fullscreenElement || 
                             document.webkitFullscreenElement || 
                             document.msFullscreenElement;
+  const wasFullScreen = isFullScreen.value;
   isFullScreen.value = !!fullscreenElement;
+  
+  // 退出全屏时重新加载核心节点
+  if (wasFullScreen && !isFullScreen.value) {
+    if (viewMode.value === 'graph') {
+      initGraph('', false);
+    }
+  }
   
   if (network.value && viewMode.value === 'graph') {
     setTimeout(() => {
@@ -664,7 +691,7 @@ const handleFullScreenChange = () => {
   }
 };
 
-// 卸载时清理（功能逻辑不变）
+// 卸载时清理
 onUnmounted(() => {
   destroyNetwork();
   window.removeEventListener('resize', () => {});
@@ -692,7 +719,7 @@ onUnmounted(() => {
   background-color: #fff;
 }
 
-/* 加载提示（仅右上角） */
+/* 加载提示 */
 .loading-tip {
   position: absolute;
   top: 10px;

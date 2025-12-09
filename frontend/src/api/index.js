@@ -38,21 +38,27 @@ service.interceptors.response.use(
 );
 
 export const api = {
+  // 获取核心图谱数据（少量节点）
   getGraphData() {
     return service.get('/graph-data');
   },
+  // 获取全量图谱数据（600+节点，用于全屏模式）
   getFullGraphData() {
     return service.get('/graph-data/full');
   },
+  // 根据实体获取相关图谱数据
   getGraphDataByEntity(entity) {
     return service.get(`/graph-data/entity/${encodeURIComponent(entity)}`);
   },
+  // 模糊搜索实体
   fuzzySearchEntity(keyword) {
     return service.get(`/graph-data/entity/fuzzy/${encodeURIComponent(keyword)}`);
   },
+  // 问答接口
   qa(data, config = {}) {
     return service.post('/qa', data, config);
   },
+  // 获取所有实体
   getEntities() {
     return service.get('/entities');
   }

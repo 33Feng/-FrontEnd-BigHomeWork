@@ -1,4 +1,4 @@
-import markdown  # 新增：导入markdown库
+import markdown
 import networkx as nx
 import pandas as pd
 from typing import List, Dict, Tuple
@@ -30,12 +30,13 @@ class FrontendKnowledgeGraph:
                 relation=row['relation'],
                 weight=row['weight']
             )
-    def get_top_graph_data(self, limit: int = 50) -> Dict:
+    
+    def get_top_graph_data(self, limit: int = 10) -> Dict:
         """
-        优化：获取核心图谱数据（按节点度数排序，只显示重要节点）
+        获取核心图谱数据（按节点度数排序，只显示重要节点）
+        默认只返回10个核心节点，确保初始视图简洁
         """
         # 1. 计算所有节点的度（连接数），并按降序排序
-        # degrees 返回的是 (node, degree) 的元组列表
         sorted_nodes = sorted(self.G.degree, key=lambda x: x[1], reverse=True)
         
         # 2. 取前 limit 个节点作为核心节点
@@ -48,16 +49,12 @@ class FrontendKnowledgeGraph:
             nodes.append({
                 "id": str(node),
                 "label": str(node),
-                # 可以在这里根据度数大小设置初始大小，度数越大节点越大
                 "value": self.G.degree[node] 
             })
             
-        # 4. 构建返回的边列表（只保留核心节点之间的连线，或者核心节点发出的连线）
+        # 4. 构建返回的边列表（只保留核心节点之间的连线）
         edges = []
         for u, v, data in self.G.edges(data=True):
-            # 策略：只有当源节点和目标节点都在核心列表中时才显示（最简洁）
-            # 或者：只要有一个在核心列表中就显示（稍微密一点，但能看到更多关联）
-            # 这里采用“都在核心列表中”，保证初始视图清爽
             if u in top_nodes_set and v in top_nodes_set:
                 edges.append({
                     "from": str(u),
@@ -168,7 +165,7 @@ class FrontendKnowledgeGraph:
         
         except Exception as e:
             print(f"DeepSeek API调用失败: {str(e)}")
-            # fallback逻辑保持不变
+            # fallback逻辑
             answer = "抱歉，暂时无法获取回答。"
             if related_data:
                 answer_parts = [f"<h4>关于「{main_entity}」的相关知识：</h4>"]
@@ -178,7 +175,7 @@ class FrontendKnowledgeGraph:
             else:
                 answer = "<p>抱歉，暂时无法获取回答。</p>"
     
-        # 生成推荐（保持原有逻辑）
+        # 生成推荐
         recommendations = []
         if related_data:
             for item in sorted(related_data, key=lambda x: x['weight'], reverse=True)[:5]:
@@ -195,11 +192,11 @@ class FrontendKnowledgeGraph:
         }
 
     def get_graph_data(self) -> Dict:
-        """获取图谱可视化数据"""
+        """获取全部图谱可视化数据（用于全屏模式）"""
         nodes = []
         for node in self.G.nodes:
             nodes.append({
-                "id": str(node),  # 确保id为字符串（vis-network要求）
+                "id": str(node),  # 确保id为字符串
                 "label": str(node)
             })
         
