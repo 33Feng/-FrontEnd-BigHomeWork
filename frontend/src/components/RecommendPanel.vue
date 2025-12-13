@@ -17,10 +17,11 @@
                   {{ item.entity || item.label }}
                 </a>
                 <el-rate 
-                  v-model="item.weight" 
-                  disabled 
-                  max="10" 
-                  class="weight"
+                :model-value="Number(item.weight)" 
+                disabled 
+                :max="5" 
+                allow-half
+                class="weight"
                 ></el-rate>
               </div>
               <div class="item-body">

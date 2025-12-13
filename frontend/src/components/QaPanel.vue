@@ -233,9 +233,9 @@ const submitQuestion = async () => {
     // 保留原有逻辑：错误时显示默认内容，保证页面不空白
     answer.value = `<p>抱歉，暂时无法为你提供回答，请稍后重试。</p>`;
     recommendations.value = [
-      { label: 'Vue3', desc: '渐进式JavaScript框架，支持Composition API', weight: 9 },
-      { label: 'Vite', desc: '新一代前端构建工具，极速冷启动', weight: 8 },
-      { label: 'TypeScript', desc: '强类型JavaScript超集', weight: 7 },
+      { label: 'Vue3', desc: '渐进式JavaScript框架，支持Composition API', weight: 5 },
+      { label: 'Vite', desc: '新一代前端构建工具，极速冷启动', weight: 4 },
+      { label: 'TypeScript', desc: '强类型JavaScript超集', weight: 4 },
     ];
   } finally {
     isLoading.value = false;

@@ -22,14 +22,36 @@ class FrontendKnowledgeGraph:
 
     def load_data(self, data_path: str):
         """加载知识图谱数据"""
-        df = pd.read_csv(data_path)
-        for _, row in df.iterrows():
-            self.G.add_edge(
-                row['source'],
-                row['target'],
-                relation=row['relation'],
-                weight=row['weight']
-            )
+        try:
+            df = pd.read_csv(data_path, encoding='utf-8-sig')
+            df.columns = df.columns.str.strip()
+            # 删除空行
+            df.dropna(subset=['source', 'target'], inplace=True)
+            # 权重处理
+            if 'weight' in df.columns:
+                df['weight'] = pd.to_numeric(df['weight'], errors='coerce').fillna(1).astype(int)
+            else:
+                df['weight'] = 1 
+            count = 0
+            for _, row in df.iterrows():
+                source_node = str(row['source']).strip()
+                target_node = str(row['target']).strip()
+                
+                if not source_node or not target_node:
+                    continue
+
+                self.G.add_edge(
+                    source_node,
+                    target_node,
+                    relation=str(row.get('relation', '')), 
+                    weight=int(row['weight'])
+                )
+                count += 1
+            
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            pass
     
     def get_top_graph_data(self, limit: int = 10) -> Dict:
         """
@@ -182,7 +204,7 @@ class FrontendKnowledgeGraph:
                 recommendations.append({
                     "entity": item['target'] if item['source'] == main_entity else item['source'],
                     "reason": f"{item['source']} {item['relation']} {item['target']}",
-                    "weight": item['weight']
+                    "weight": int(item['weight'])
                 })
     
         return {
