@@ -38,11 +38,11 @@ service.interceptors.response.use(
 );
 
 export const api = {
-  // 获取核心图谱数据（少量节点）
+  // 获取核心图谱数据（少量节点，默认10个）
   getGraphData() {
-    return service.get('/graph-data');
+    return service.get('/graph-data?limit=10');
   },
-  // 获取全量图谱数据（600+节点，用于全屏模式）
+  // 获取全量图谱数据（用于全屏模式）
   getFullGraphData() {
     return service.get('/graph-data/full');
   },

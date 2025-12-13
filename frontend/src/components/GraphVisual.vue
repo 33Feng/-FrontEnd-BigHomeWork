@@ -156,6 +156,7 @@ import { ref, onMounted, nextTick, onUnmounted, defineProps, defineEmits } from 
 import { Network, DataSet } from 'vis-network/standalone';
 import { ElButton, ElMessage, ElInput, ElIcon } from 'element-plus';
 import { Fullscreen, Picture, Download, ArrowDown, Loading, ArrowLeft } from '@element-plus/icons-vue';
+import { api } from '../api/index';
 
 // 关系颜色映射函数 采用模糊匹配
 const getRelationColor = (relation) => {
@@ -240,6 +241,13 @@ const nodeHistory = ref([]); // 节点点击历史记录（用于回溯）
 const EMPTY_TEXT_PLACEHOLDER = '无文本内容'; // 空文本占位符
 const EMPTY_RELATION_PLACEHOLDER = '无关联'; // 空关系占位符
 
+// 格式化空文本
+const formatEmptyText = (text, placeholder = EMPTY_TEXT_PLACEHOLDER, skipTrim = false) => {
+  if (!text) return placeholder;
+  const processed = skipTrim ? text : text.trim();
+  return processed === '' ? placeholder : processed;
+};
+
 // 切换视图模式
 const toggleViewMode = () => {
   const oldMode = viewMode.value;
@@ -262,125 +270,6 @@ const toggleViewMode = () => {
 const hasSubordinateContent = (entity, edges) => {
   if (!entity || entity === EMPTY_TEXT_PLACEHOLDER) return false;
   return edges.some(edge => edge.source === entity);
-};
-
-// 处理词条点击
-const handleTermClick = (entity) => {
-  if (!entity || entity === EMPTY_TEXT_PLACEHOLDER) return;
-  
-  searchEntity.value = entity;
-  handleSearch();
-};
-
-// 格式化空文本
-const formatEmptyText = (text, placeholder = EMPTY_TEXT_PLACEHOLDER, isRelation = false) => {
-  if (!text || typeof text !== 'string') {
-    return placeholder;
-  }
-  
-  const trimmed = text.trim();
-  if (trimmed === '') {
-    return placeholder;
-  }
-  
-  return trimmed;
-};
-
-// 加载词条数据（模拟数据：若无api，可替换为本地模拟）
-const loadTermsData = async (entity = '') => {
-  loading.value = true;
-  try {
-    let res;
-    entity = formatEmptyText(entity);
-    
-    // 模拟API请求：实际项目中替换为真实接口
-    if (entity.trim() && entity !== EMPTY_TEXT_PLACEHOLDER) {
-      // res = await api.getGraphDataByEntity(encodeURIComponent(entity.trim()));
-      // 模拟数据
-      res = {
-        data: {
-          nodes: [
-            { id: 1, label: entity },
-            { id: 2, label: `${entity}的父类` },
-            { id: 3, label: `${entity}的子类` },
-            { id: 4, label: `${entity}的相关技术` }
-          ],
-          edges: [
-            { source: entity, target: `${entity}的父类`, relation: '继承自' },
-            { source: entity, target: `${entity}的子类`, relation: '包含' },
-            { source: entity, target: `${entity}的相关技术`, relation: '关联' },
-            { source: `${entity}的相关技术`, target: 'Vue', relation: '基于' }
-          ]
-        }
-      };
-    } else {
-      // res = await api.getGraphData();
-      // 模拟数据
-      res = {
-        data: {
-          nodes: [
-            { id: 1, label: '前端开发' },
-            { id: 2, label: 'Vue' },
-            { id: 3, label: 'React' },
-            { id: 4, label: 'JavaScript' }
-          ],
-          edges: [
-            { source: '前端开发', target: 'Vue', relation: '核心框架' },
-            { source: '前端开发', target: 'React', relation: '核心框架' },
-            { source: 'Vue', target: 'JavaScript', relation: '基于' },
-            { source: 'React', target: 'JavaScript', relation: '基于' }
-          ]
-        }
-      };
-    }
-    
-    // 数据强容错处理
-    const data = res?.data || { nodes: [], edges: [] };
-    const formattedEdges = [];
-    
-    // 格式化边数据：兼容不同后端返回格式，relation宽松判断
-    if (Array.isArray(data.edges)) {
-      formattedEdges.push(...data.edges.map(edge => ({
-        source: formatEmptyText(edge.source || edge.from),
-        target: formatEmptyText(edge.target || edge.to),
-        // 关系字段单独处理，宽松判断有效内容
-        relation: formatEmptyText(edge.relation || edge.label, EMPTY_RELATION_PLACEHOLDER, true)
-      })));
-    }
-    
-    // 过滤无效边，确保数据有效性（两端节点均有效）
-    const validEdges = formattedEdges.filter(edge => 
-      edge.source && edge.target && edge.relation && 
-      edge.source !== edge.target && 
-      edge.source !== EMPTY_TEXT_PLACEHOLDER && 
-      edge.target !== EMPTY_TEXT_PLACEHOLDER
-    );
-    
-    // 基于有效边提取有效节点（避免孤立的无效节点）
-    const validNodeLabels = new Set();
-    validEdges.forEach(edge => {
-      validNodeLabels.add(edge.source);
-      validNodeLabels.add(edge.target);
-    });
-    
-    // 处理节点数据：仅保留有效边关联的节点
-    const validNodes = Array.isArray(data.nodes) 
-      ? data.nodes.map(node => ({
-          ...node,
-          label: formatEmptyText(node.label || node.id)
-        })).filter(node => validNodeLabels.has(node.label))
-      : [];
-    
-    termsData.value = { nodes: validNodes, edges: validEdges };
-    // 通知父组件获取推荐数据
-    emit('getRecommendData', currentEntity.value || props.mainEntity);
-  } catch (error) {
-    console.error('加载词条数据失败：', error);
-    ElMessage.error(`加载失败：${error.message}`);
-    termsData.value = { nodes: [], edges: [] };
-  } finally {
-    loading.value = false;
-  }
 };
 
 // 回溯到上一个节点
@@ -447,421 +336,204 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
   if (viewMode.value !== 'graph') return;
   
   try {
+    // 显示加载状态
     loading.value = true;
+    
+    // 销毁旧图谱
     destroyNetwork();
-
-    await nextTick();
-    await new Promise(resolve => setTimeout(resolve, 300));
-
+    
+    // 检查容器有效性
     if (!checkContainerValidity()) {
-      if (initRetryCount.value < 3) {
-        initRetryCount.value++;
-        ElMessage.info(`重试初始化图谱（${initRetryCount.value}/3）`);
-        setTimeout(() => initGraph(targetEntity, forceFull), 800);
-        return;
-      } else {
-        initRetryCount.value = 0;
-        loading.value = false;
-        ElMessage.error('图谱初始化失败，请刷新页面重试');
-        return;
-      }
-    }
-    initRetryCount.value = 0;
-
-    let entity = typeof targetEntity === 'string' ? targetEntity.trim() : '';
-    entity = targetEntity === '' ? '' : (entity || currentEntity.value || props.mainEntity);
-    // 格式化实体名称，避免无效值
-    entity = formatEmptyText(entity);
-    currentEntity.value = entity;
-    emit('update:currentEntity', entity);
-
-    let res;
-    try {
-      // 模拟API请求：实际项目中替换为真实接口
-      if (entity && entity !== EMPTY_TEXT_PLACEHOLDER) {
-        // res = await api.getGraphDataByEntity(encodeURIComponent(entity));
-        res = {
-          data: {
-            nodes: [
-              { id: 1, label: entity },
-              { id: 2, label: `${entity}的父类` },
-              { id: 3, label: `${entity}的子类` },
-              { id: 4, label: `${entity}的相关技术` }
-            ],
-            edges: [
-              { source: entity, target: `${entity}的父类`, relation: '继承自' },
-              { source: entity, target: `${entity}的子类`, relation: '包含' },
-              { source: entity, target: `${entity}的相关技术`, relation: '关联' },
-              { source: `${entity}的相关技术`, target: 'Vue', relation: '基于' }
-            ]
-          }
-        };
-        isShowingFull.value = forceFull; // 仅标记为全屏状态，不改变数据加载逻辑
-      } else if (isFullScreen.value || forceFull) {
-        // res = await api.getFullGraphData ? await api.getFullGraphData() : await api.getGraphData();
-        res = {
-          data: {
-            nodes: [
-              { id: 1, label: '前端开发' },
-              { id: 2, label: 'Vue' },
-              { id: 3, label: 'React' },
-              { id: 4, label: 'JavaScript' },
-              { id: 5, label: 'CSS3' },
-              { id: 6, label: 'HTML5' }
-            ],
-            edges: [
-              { source: '前端开发', target: 'Vue', relation: '核心框架' },
-              { source: '前端开发', target: 'React', relation: '核心框架' },
-              { source: 'Vue', target: 'JavaScript', relation: '基于' },
-              { source: 'React', target: 'JavaScript', relation: '基于' },
-              { source: '前端开发', target: 'CSS3', relation: '样式层' },
-              { source: '前端开发', target: 'HTML5', relation: '结构层' }
-            ]
-          }
-        };
-        isShowingFull.value = true;
-      } else {
-        // res = await api.getGraphData();
-        res = {
-          data: {
-            nodes: [
-              { id: 1, label: '前端开发' },
-              { id: 2, label: 'Vue' },
-              { id: 3, label: 'React' },
-              { id: 4, label: 'JavaScript' }
-            ],
-            edges: [
-              { source: '前端开发', target: 'Vue', relation: '核心框架' },
-              { source: '前端开发', target: 'React', relation: '核心框架' },
-              { source: 'Vue', target: 'JavaScript', relation: '基于' },
-              { source: 'React', target: 'JavaScript', relation: '基于' }
-            ]
-          }
-        };
-        isShowingFull.value = false;
-      }
-      
-      // 同步更新词条数据
-      const data = res?.data || { nodes: [], edges: [] };
-      const formattedEdges = Array.isArray(data.edges) ? data.edges.map(edge => ({
-        source: formatEmptyText(edge.source || edge.from),
-        target: formatEmptyText(edge.target || edge.to),
-        relation: formatEmptyText(edge.relation || edge.label, EMPTY_RELATION_PLACEHOLDER, true)
-      })).filter(edge => 
-        edge.source && edge.target && edge.relation && 
-        edge.source !== EMPTY_TEXT_PLACEHOLDER && 
-        edge.target !== EMPTY_TEXT_PLACEHOLDER
-      ) : [];
-      
-      // 基于有效边提取有效节点（减少无效节点）
-      const validNodeLabels = new Set();
-      formattedEdges.forEach(edge => {
-        validNodeLabels.add(edge.source);
-        validNodeLabels.add(edge.target);
-      });
-      
-      termsData.value = {
-        nodes: Array.isArray(data.nodes) ? data.nodes.map(node => ({
-          ...node,
-          label: formatEmptyText(node.label || node.id)
-        })).filter(node => validNodeLabels.has(node.label)) : [],
-        edges: formattedEdges
-      };
-      // 通知父组件获取推荐数据
-      emit('getRecommendData', entity);
-    } catch (apiError) {
-      ElMessage.error(`数据请求失败：${apiError.message}`);
       loading.value = false;
-      return; 
+      return;
     }
     
-    const { nodes = [], edges = [] } = res?.data || {};
-    // 预处理边：格式化文本
-    const rawEdges = Array.isArray(edges) ? edges.map(edge => ({
+    // 加载数据
+    let res;
+    if (targetEntity && targetEntity !== EMPTY_TEXT_PLACEHOLDER) {
+      // 加载指定实体的数据
+      res = await api.getGraphDataByEntity(targetEntity);
+      isShowingFull.value = false;
+    } else if (isFullScreen.value || forceFull) {
+      // 全屏模式或强制全屏：加载全量数据
+      res = await api.getFullGraphData();
+      isShowingFull.value = true;
+    } else {
+      // 默认加载10个核心节点
+      res = await api.getGraphData();
+      isShowingFull.value = false;
+    }
+    
+    // 同步更新词条数据
+    const data = res?.data || { nodes: [], edges: [] };
+    const formattedEdges = Array.isArray(data.edges) ? data.edges.map(edge => ({
       source: formatEmptyText(edge.source || edge.from),
       target: formatEmptyText(edge.target || edge.to),
       relation: formatEmptyText(edge.relation || edge.label, EMPTY_RELATION_PLACEHOLDER, true)
     })).filter(edge => 
       edge.source && edge.target && edge.relation && 
-      edge.source !== edge.target && 
       edge.source !== EMPTY_TEXT_PLACEHOLDER && 
       edge.target !== EMPTY_TEXT_PLACEHOLDER
     ) : [];
-
-    // 提取所有有效节点标签
-    const allNodeLabels = new Set();
-    rawEdges.forEach(edge => {
-      allNodeLabels.add(edge.source);
-      allNodeLabels.add(edge.target);
+    
+    // 基于有效边提取有效节点（减少无效节点）
+    const validNodeLabels = new Set();
+    formattedEdges.forEach(edge => {
+      validNodeLabels.add(edge.source);
+      validNodeLabels.add(edge.target);
     });
     
-    // 处理节点数据：格式化并过滤
-    const baseNodes = Array.isArray(nodes) 
-      ? nodes.map(node => ({
-          ...node,
-          label: formatEmptyText(node.label || node.id || `node_${Date.now()}_${Math.random().toString(36).slice(2)}`)
-        }))
-      : [];
-    
-    // 如果没有节点数据，从边数据创建节点
-    const edgeDerivedNodes = Array.from(allNodeLabels).map(label => ({
-      label,
-      id: `auto_${label.replace(/\s+/g, '_')}`
+    // 格式化节点数据：鲜艳蓝色+黑色边框+白色文字，优化光滑度
+    const formattedNodes = Array.from(validNodeLabels).map(nodeLabel => ({
+      id: nodeLabel,
+      label: nodeLabel,
+      size: Math.min(20 + Math.log(Array.from(validNodeLabels).length) * 3, 30),
+      // 节点颜色配置：黑色边框+白色文字，与词条颜色风格一致
+      color: {
+        background: nodeLabel === currentEntity.value ? '#0C6ECD' : '#1989FA', // 选中节点更深的蓝色，默认节点鲜艳蓝色
+        border: '#000000', // 边框设置为黑色
+        text: '#FFFFFF' // 文字设置为白色
+      },
+      // 优化节点光滑度：轻微的阴影和圆角（ellipse形状本身圆润，补充阴影参数）
+      shadow: {
+        enabled: true,
+        color: 'rgba(0, 0, 0, 0.2)',
+        size: 3,
+        x: 1,
+        y: 1
+      }
     }));
     
-    // 合并节点，去重
-    const combinedNodes = [...baseNodes, ...edgeDerivedNodes];
-    const uniqueNodes = [];
-    const seenLabels = new Set();
+    // 更新词条数据
+    termsData.value = {
+      nodes: formattedNodes,
+      edges: formattedEdges
+    };
     
-    combinedNodes.forEach(node => {
-      if (!seenLabels.has(node.label)) {
-        seenLabels.add(node.label);
-        uniqueNodes.push(node);
-      }
-    });
-    
-    // 标记中心节点（当前实体）
-    const centerLabel = entity !== EMPTY_TEXT_PLACEHOLDER ? entity : props.mainEntity || '';
-    const isCenterNode = (label) => centerLabel && label === centerLabel;
-    
-    // 格式化节点数据：改为**更圆滑的椭圆形**，调整尺寸增强圆润感
-    const validNodes = uniqueNodes
-      .filter(node => node.label && node.label !== EMPTY_TEXT_PLACEHOLDER)
-      .map(node => {
-        const label = node.label;
-        const isCenter = isCenterNode(label);
-        let bgColor, borderColor;
-        
-        // 节点颜色策略（保持原样式的颜色逻辑）
-        if (isCenter) {
-          // 中心节点用绿色突出（原样式颜色）
-          bgColor = '#67C23A';
-          borderColor = '#529B2E';
-        } else if (label === props.mainEntity && props.mainEntity) {
-          // 核心实体（来自父组件）用蓝色（原样式颜色）
-          bgColor = '#409EFF';
-          borderColor = '#1989FA';
-        } else {
-          // 普通节点用默认蓝（原样式颜色）
-          bgColor = '#409EFF'; 
-          borderColor = '#1989FA';
-        }
-
-        return {
-          id: node.id || `node_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-          label: label,
-          shape: 'ellipse', // 保留圆滑椭圆形的功能调整
-          size: isCenter ? 40 : 25, // 原尺寸配置
-          width: isCenter ? 50 : 30, // 保留椭圆形宽高配置
-          height: isCenter ? 30 : 20, // 保留椭圆形宽高配置
-          font: { 
-            size: isCenter ? 16 : 14, 
-            color: isCenter ? '#000' : '#333', 
-            strokeWidth: 2,
-            strokeColor: '#fff'
-          },
-          color: { 
-            background: bgColor,
-            border: borderColor,
-            highlight: {
-                background: bgColor,
-                border: '#000'
-            }
-          },
-          physics: true,
-          mass: isCenter ? 2 : 1,
-          borderWidth: 3, // 原边框宽度
-          borderWidthSelected: 5 // 原选中边框宽度
-        };
-      });
-
-    // 确保至少有一个节点显示（原逻辑）
-    if (validNodes.length === 0) {
-      validNodes.push({
-        id: `node_empty_${Date.now()}`,
-        label: entity !== EMPTY_TEXT_PLACEHOLDER ? entity : '无数据',
-        shape: 'ellipse',
-        size: 35,
-        width: 45,
-        height: 25,
-        color: { 
-          background: '#67C23A',
-          border: '#529B2E'
+    // 图谱数据
+    const graphData = {
+      nodes: new DataSet(formattedNodes),
+      edges: new DataSet(formattedEdges.map(edge => ({
+        from: edge.source,
+        to: edge.target,
+        label: edge.relation,
+        color: {
+          color: getRelationColor(edge.relation),
+          highlight: '#FF0000'
         },
-        physics: false,
-        borderWidth: 3
-      });
-    }
-
-    const nodeLabelMap = new Map(validNodes.map(n => [n.label, n.id]));
-
-    // 过滤并格式化边数据（原逻辑）
-    const validEdges = rawEdges
-      .filter(edge => 
-        nodeLabelMap.has(edge.source) && 
-        nodeLabelMap.has(edge.target)
-      )
-      .map(edge => {
-        const randomness = 0.6 + Math.random() * 0.4;
-        const edgeColor = getRelationColor(edge.relation);
-        return {
-          from: nodeLabelMap.get(edge.source),
-          to: nodeLabelMap.get(edge.target),
-          label: edge.relation,
-          width: 0.8,
-          color: {
-            color: edgeColor,
-            highlight: edgeColor,
-            hover: edgeColor
-          },
-          font: {
-            size: 12,
-            strokeWidth: 1,
-            strokeColor: '#fff'
-          },
-          physics: true,
-          springLength: 150 * randomness,
-          springConstant: 0.15 / randomness
-        };
-      });
-
-    // 配置vis-network选项（保持原样式的配置）
+        font: {
+          size: 12,
+          strokeWidth: 0
+        },
+        width: Math.min(2 + (edge.weight || 0) / 5, 5)
+      })))
+    };
+    
+    // 图谱配置
     const options = {
       nodes: {
-        borderWidth: 3,
-        borderWidthSelected: 5,
-        shadow: {
-          enabled: true,
-          size: 10,
-          color: 'rgba(0,0,0,0.1)'
+        shape: 'ellipse',
+        font: {
+          size: 14,
+          color: '#FFFFFF', // 显式指定文字颜色为白色，确保兼容
+          strokeWidth: 0
         },
-        chosen: true
+        borderWidth: 1, // 边框宽度，配合黑色边框更清晰
+        shadow: true // 启用阴影增强光滑感
       },
       edges: {
-        color: { color: '#e2e2e2', highlight: '#409EFF' },
-        smooth: { 
-          type: 'cubicBezier', 
-          forceDirection: 'horizontal',
-          roundness: 0.3
+        smooth: {
+          type: 'cubicBezier',
+          forceDirection: 'vertical',
+          roundness: 0.4
         },
-        hoverWidth: 3,
-        zIndex: 1,
-        margin: 20,
-        labelOffset: 15
-      },
-      physics: {
-        enabled: validNodes.length > 1,
-        solver: 'forceAtlas2Based',
-        forceAtlas2Based: {
-          theta: 0.5,
-          gravitationalConstant: -500,
-          centralGravity: 0.08,
-          springConstant: 0,
-          springLength: 0,
-          damping: 0.7,
-          avoidOverlap: 0.9,
-          edgeWeightInfluence: 15.0,
-          barnesHut: {
-            theta: 0.5,
-            gravitationalConstant: -200,
-            centralGravity: 0.1,
-            springConstant: 0.04,
-            springLength: 100,
-            damping: 0.09
+        font: {
+          align: 'middle'
+        },
+        arrows: {
+          to: {
+            enabled: true,
+            scaleFactor: 0.8
           }
-        },
-        stabilization: {
-          enabled: true,
-          iterations: 300,
-          updateInterval: 25,
-          onlyDynamicEdges: false,
-          fit: true
-        },
-        repulsion: {
-          nodeDistance: 200,
-          centralGravity: 0.1,
-          springLength: 200,
-          springConstant: 0.03,
-          damping: 0.1,
-          edgeDistance: 50,
-          edgeNodeDistance: 80
-        },
-        collision: {
-          enabled: true,
-          detection: 'all',
-          handleOverlap: 0.8
         }
       },
-      interaction: { 
-        hover: true, 
-        tooltipDelay: 200,
+      physics: {
+        forceAtlas2Based: {
+          gravitationalConstant: -26,
+          centralGravity: 0.005,
+          springLength: 230
+        },
+        maxVelocity: 146,
+        solver: 'forceAtlas2Based',
+        timestep: 0.35,
+        stabilization: {
+          enabled: true,
+          iterations: 1000,
+          updateInterval: 25
+        }
+      },
+      interaction: {
         dragNodes: true,
+        dragView: true,
         zoomView: true,
-        navigationButtons: false,
-        keyboard: true,
-        selectable: true
+        tooltipDelay: 200,
+        hover: true
       },
       layout: {
-        randomSeed: 42,
-        improvedLayout: true
+        randomSeed: 2
       }
     };
-
-    try {
-      graphRef.value.style.visibility = 'visible';
-      graphRef.value.style.opacity = '1';
+    
+    // 创建新图谱实例
+    await nextTick();
+    if (graphRef.value) {
+      network.value = new Network(graphRef.value, graphData, options);
       
-      network.value = new Network(
-        graphRef.value, 
-        { 
-          nodes: new DataSet(validNodes), 
-          edges: new DataSet(validEdges) 
-        }, 
-        options
-      );
-
+      // 图谱加载完成
       network.value.on('stabilizationIterationsDone', () => {
         loading.value = false;
-        emit('graph-loaded');
+        emit('graph-loaded', true);
       });
-
-      // 节点点击事件（原逻辑）
+      
+      // 节点点击事件：修复循环叠加问题
       network.value.on('click', (params) => {
         if (params.nodes.length > 0) {
           const nodeId = params.nodes[0];
-          const node = network.value.body.data.nodes.get(nodeId);
+          const nodeLabel = nodeId;
           
-          if (node && node.label) {
-            const nodeLabel = node.label;
-            
-            // 检查是否是无效节点
-            if (nodeLabel === EMPTY_TEXT_PLACEHOLDER) {
-              ElMessage.warning('该节点无有效信息');
-              return;
-            }
-            
-            // 检查节点是否有下属内容
-            const hasSubContent = validEdges.some(edge => edge.from === nodeId);
-            if (!hasSubContent) {
-              ElMessage.info({
-                message: `「${nodeLabel}」无下属关联内容`,
-                type: 'info',
-                duration: 2000,
-                zIndex: 999999
-              });
-              return;
-            }
-            
-            searchEntity.value = nodeLabel;
-            handleSearch();
+          // 避免重复点击相同节点导致循环叠加
+          if (nodeLabel === currentEntity.value) return;
+          
+          // 检查是否有下属内容
+          const hasContent = hasSubordinateContent(nodeLabel, formattedEdges);
+          if (!hasContent) {
+            ElMessage.info({
+              message: `「${nodeLabel}」无下属关联内容`,
+              type: 'info',
+              duration: 2000,
+              zIndex: 999999
+            });
+            return;
           }
+          
+          // 添加到历史记录
+          if (nodeHistory.value[nodeHistory.value.length - 1] !== nodeLabel) {
+            nodeHistory.value.push(nodeLabel);
+          }
+          
+          searchEntity.value = nodeLabel;
+          currentEntity.value = nodeLabel;
+          emit('update:currentEntity', nodeLabel);
+          emit('getRecommendData', nodeLabel);
+          
+          // 重新初始化图谱，避免节点叠加
+          initGraph(nodeLabel);
         }
       });
 
-      // 监听物理引擎更新（原逻辑）
+      // 监听物理引擎更新
       network.value.on('physicsUpdate', () => {
-        if (network.value && validNodes.length > 1) {
+        if (network.value && formattedNodes.length > 1) {
           network.value.setOptions({
             physics: {
               collision: {
@@ -872,29 +544,67 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
         }
       });
 
-    } catch (initError) {
-      console.error('图谱实例创建失败：', initError);
-      ElMessage.error(`图谱加载失败：${initError.message}`);
+    } else {
       loading.value = false;
-      graphRef.value.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#999;">图谱加载失败，请点击"重新加载"重试</div>`;
-      return;
+      ElMessage.error('图谱容器未准备好');
     }
 
   } catch (error) {
-    console.error('图谱初始化总错误：', error);
-    ElMessage.error(`系统错误：${error.message}`);
+    console.error('图谱初始化错误：', error);
+    ElMessage.error(`图谱加载失败：${error.message || '未知错误'}`);
     loading.value = false;
     destroyNetwork();
   }
 };
 
-// 处理搜索（原逻辑）
-const handleSearch = () => {
-  let entity = searchEntity.value.trim();
-  entity = formatEmptyText(entity);
+// 加载词条数据：默认显示所有词条
+const loadTermsData = async (entity = '') => {
+  if (viewMode.value !== 'terms') return;
   
-  if (entity === EMPTY_TEXT_PLACEHOLDER) {
-    ElMessage.warning('请输入有效的节点名称！');
+  loading.value = true;
+  try {
+    let res;
+    if (entity && entity !== EMPTY_TEXT_PLACEHOLDER) {
+      // 有指定实体时，加载该实体相关数据
+      res = await api.getGraphDataByEntity(entity);
+    } else {
+      // 无指定实体时，直接加载全量数据（默认显示所有词条）
+      res = await api.getFullGraphData();
+    }
+    
+    const data = res?.data || { nodes: [], edges: [] };
+    const formattedEdges = Array.isArray(data.edges) ? data.edges.map(edge => ({
+      source: formatEmptyText(edge.source || edge.from),
+      target: formatEmptyText(edge.target || edge.to),
+      relation: formatEmptyText(edge.relation || edge.label, EMPTY_RELATION_PLACEHOLDER, true)
+    })).filter(edge => 
+      edge.source && edge.target && edge.relation && 
+      edge.source !== EMPTY_TEXT_PLACEHOLDER && 
+      edge.target !== EMPTY_TEXT_PLACEHOLDER
+    ) : [];
+    
+    const validNodeLabels = new Set();
+    formattedEdges.forEach(edge => {
+      validNodeLabels.add(edge.source);
+      validNodeLabels.add(edge.target);
+    });
+    
+    termsData.value = {
+      nodes: Array.from(validNodeLabels).map(node => ({ id: node, label: node })),
+      edges: formattedEdges
+    };
+  } catch (error) {
+    console.error('加载词条数据失败：', error);
+    ElMessage.error(`加载词条失败：${error.message || '未知错误'}`);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 处理词条点击
+const handleTermClick = (entity) => {
+  if (!entity || entity === EMPTY_TEXT_PLACEHOLDER) {
+    ElMessage.warning('无效的实体名称');
     return;
   }
   
@@ -921,7 +631,7 @@ const handleSearch = () => {
   }
 };
 
-// 显示核心节点（默认状态，原逻辑）
+// 显示核心节点
 const showAllGraph = () => {
   searchEntity.value = '';
   currentEntity.value = '';
@@ -938,7 +648,7 @@ const showAllGraph = () => {
   }
 };
 
-// 导出图谱图片（原逻辑）
+// 导出图谱图片
 const exportGraphImage = () => {
   if (viewMode !== 'graph' || !network.value || !graphRef.value) {
     ElMessage.warning('请在图谱视图下操作，且确保图谱已加载');
@@ -972,7 +682,7 @@ const exportGraphImage = () => {
   }
 };
 
-// 导出数据（原逻辑）
+// 导出数据
 const exportGraphJSON = () => {
   let exportData;
   
@@ -1013,7 +723,24 @@ const exportGraphJSON = () => {
   }
 };
 
-// 切换全屏模式（原逻辑）
+// 处理全屏状态变化
+const handleFullScreenChange = () => {
+  const isFull = !!document.fullscreenElement || 
+                 !!document.webkitFullscreenElement || 
+                 !!document.msFullscreenElement;
+  isFullScreen.value = isFull;
+  
+  // 退出全屏时重新加载数据
+  if (!isFull) {
+    if (viewMode.value === 'graph') {
+      initGraph(currentEntity.value || '', false);
+    } else {
+      loadTermsData(currentEntity.value || '');
+    }
+  }
+};
+
+// 切换全屏模式
 const toggleFullScreen = async () => {
   const container = document.querySelector('.graph-container');
   if (!container) {
@@ -1023,21 +750,30 @@ const toggleFullScreen = async () => {
   
   try {
     if (!isFullScreen.value) {
-      // 进入全屏
+      // 进入全屏前加载全量数据
       if (viewMode.value === 'graph') {
-        if (!currentEntity.value || currentEntity.value === EMPTY_TEXT_PLACEHOLDER) {
-          // 无当前节点：加载全部节点
-          await initGraph('', true);
-        } else {
-          // 有当前节点：加载当前节点数据
-          await initGraph(currentEntity.value, true);
-        }
+        await initGraph(currentEntity.value || '', true);
+      } else {
+        await loadTermsData(currentEntity.value || '');
       }
-      requestFullScreen(container);
-      ElMessage.success(`已进入全屏模式（${currentEntity.value ? '显示当前节点' : '显示全部节点'}），按ESC键可退出`);
+      // 进入全屏
+      if (container.requestFullscreen) {
+        await container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) {
+        await container.webkitRequestFullscreen();
+      } else if (container.msRequestFullscreen) {
+        await container.msRequestFullscreen();
+      }
+      ElMessage.success(`已进入全屏模式，按ESC键可退出`);
     } else {
       // 退出全屏
-      exitFullScreen();
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        await document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        await document.msExitFullscreen();
+      }
       ElMessage.info(`已退出全屏模式`);
     }
   } catch (error) {
@@ -1045,57 +781,54 @@ const toggleFullScreen = async () => {
   }
 };
 
-// 请求全屏（兼容多浏览器，原逻辑）
-const requestFullScreen = (element) => {
-  if (element.requestFullscreen) {
-    element.requestFullscreen();
-  } else if (element.webkitRequestFullscreen) {
-    element.webkitRequestFullscreen();
-  } else if (element.msRequestFullscreen) {
-    element.msRequestFullscreen();
-  }
-};
-
-// 退出全屏（兼容多浏览器，原逻辑）
-const exitFullScreen = () => {
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.webkitExitFullscreen) {
-    document.webkitExitFullscreen();
-  } else if (document.msExitFullscreen) {
-    document.msExitFullscreen();
-  }
-};
-
-// 监听全屏状态变化（原逻辑）
-const handleFullScreenChange = () => {
-  const fullscreenElement = document.fullscreenElement || 
-                            document.webkitFullscreenElement || 
-                            document.msFullscreenElement;
-  const wasFullScreen = isFullScreen.value;
-  isFullScreen.value = !!fullscreenElement;
+// 处理搜索
+const handleSearch = () => {
+  let entity = searchEntity.value.trim();
+  entity = formatEmptyText(entity);
   
-  // 退出全屏时重新加载
-  if (wasFullScreen && !isFullScreen.value) {
-    if (viewMode.value === 'graph') {
-      if (!currentEntity.value || currentEntity.value === EMPTY_TEXT_PLACEHOLDER) {
-        initGraph('', false);
-      } else {
-        initGraph(currentEntity.value, false);
-      }
+  if (entity === EMPTY_TEXT_PLACEHOLDER) {
+    showAllGraph();
+    return;
+  }
+  
+  // 检查是否有下属内容（预查询）
+  const hasContent = async () => {
+    try {
+      const res = await api.getGraphDataByEntity(entity);
+      const edges = res?.data?.edges || [];
+      return edges.some(edge => edge.source === entity || edge.target === entity);
+    } catch (error) {
+      console.error('检查实体内容失败：', error);
+      return false;
     }
-  }
+  };
   
-  if (network.value && viewMode.value === 'graph') {
-    setTimeout(() => {
-      network.value.redraw();
-    }, 300);
-  }
+  hasContent().then(contentExists => {
+    if (!contentExists) {
+      ElMessage.warning(`未找到「${entity}」的相关数据`);
+      return;
+    }
+    
+    // 添加到历史记录
+    if (nodeHistory.value[nodeHistory.value.length - 1] !== entity) {
+      nodeHistory.value.push(entity);
+    }
+    
+    currentEntity.value = entity;
+    emit('update:currentEntity', entity);
+    emit('getRecommendData', entity);
+    
+    if (viewMode.value === 'graph') {
+      initGraph(entity);
+    } else {
+      loadTermsData(entity);
+    }
+  });
 };
 
-// 初始化（原逻辑）
+// 组件挂载时初始化
 onMounted(() => {
-  // 监听全屏变化
+  // 监听全屏状态变化
   document.addEventListener('fullscreenchange', handleFullScreenChange);
   document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
   document.addEventListener('msfullscreenchange', handleFullScreenChange);
@@ -1117,7 +850,7 @@ onMounted(() => {
   });
 });
 
-// 卸载时清理（原逻辑）
+// 卸载时清理
 onUnmounted(() => {
   destroyNetwork();
   window.removeEventListener('resize', () => {});
@@ -1161,90 +894,64 @@ onUnmounted(() => {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: 99999 !important;
-  background: white !important;
-  border: none !important;
-  margin: 0 !important;
-  padding: 20px !important;
-}
-
-.graph-container.fullscreen :deep(.vis-network) {
   width: 100% !important;
   height: 100% !important;
-  outline: none;
+  z-index: 9999 !important;
+  background-color: white;
+  padding: 20px;
+  border-radius: 0 !important;
 }
 
 .terms-container {
   width: 100%;
   height: 100%;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  padding: 15px;
-  box-sizing: border-box;
 }
 
 .terms-header {
-  margin-bottom: 10px;
-  padding-bottom: 10px;
+  padding: 15px;
   border-bottom: 1px solid #e6e6e6;
+  background-color: #f5f7fa;
 }
 
 .terms-header h3 {
-  margin: 0;
-  font-size: 18px;
+  margin: 0 0 5px 0;
+  font-size: 16px;
   color: #333;
 }
 
 .terms-header p {
-  margin: 5px 0 0 0;
+  margin: 0;
   font-size: 14px;
   color: #666;
 }
 
-/* 恢复原滚动条样式 */
 .terms-list-wrapper {
-  width: 100%;
-  height: calc(100% - 60px);
+  flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 5px;
+  padding: 15px;
   box-sizing: border-box;
-}
-
-.terms-list-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-
-.terms-list-wrapper::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.terms-list-wrapper::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.terms-list-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
 }
 
 .terms-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 100%;
+  gap: 10px;
 }
 
 .terms-loading {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 15px;
+  padding: 10px 0;
 }
 
 .loading-skeleton {
-  height: 48px;
+  height: 50px;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
@@ -1278,7 +985,7 @@ onUnmounted(() => {
   border-radius: 4px;
   font-weight: 500;
   white-space: nowrap;
-  color: #1989FA;
+  color: #1989FA; /* 与节点颜色一致的鲜艳蓝色 */
   text-decoration: none;
   transition: all 0.2s;
 }
@@ -1286,7 +993,7 @@ onUnmounted(() => {
 .term-node:hover {
   background: #d1e7fd;
   text-decoration: underline;
-  color: #0c6ecd;
+  color: #0C6ECD; /* 与选中节点一致的深蓝色 */
 }
 
 .term-node[href="javascript:void(0);"] {
@@ -1324,62 +1031,37 @@ onUnmounted(() => {
   overflow: hidden !important;
 }
 
-/* 保留椭圆形节点的圆润样式，其余恢复原节点样式 */
+/* 保留椭圆形节点的圆润样式，增强hover效果 */
 :deep(.vis-node) {
   transition: all 0.2s;
   z-index: 100 !important;
-  border-radius: 60% !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  /* 配合节点配置，增强光滑感 */
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
 }
 
 :deep(.vis-node:hover) {
-  scale: 1.05;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  stroke: #000000 !important; /* hover时边框仍为黑色，增强一致性 */
+  stroke-width: 3px !important; /* 增强hover时的边框效果 */
+}
+
+:deep(.vis-label) {
+  font-size: 12px !important;
+  padding: 2px 5px !important;
+  border-radius: 3px !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
 }
 
 :deep(.vis-edge) {
-  z-index: 1 !important;
-  stroke-width: 2px !important;
   transition: all 0.3s;
 }
 
 :deep(.vis-edge:hover) {
   stroke-width: 3px !important;
-  stroke: #409EFF !important;
 }
 
-:deep(.vis-edge-text) {
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  padding: 3px 6px !important;
-  border-radius: 4px !important;
-  z-index: 50 !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-  font-weight: 500 !important;
-}
-
-:deep(.vis-node.vis-selected) {
-  scale: 1.1;
-  box-shadow: 0 0 15px rgba(64, 158, 255, 0.5) !important;
-}
-
-:deep(.vis-edge.vis-selected) {
-  stroke-width: 4px !important;
-  stroke: #409EFF !important;
-}
-
-/* 恢复原按钮样式 */
-.el-button--small {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.el-button--text.is-disabled {
-  color: #c0c4cc !important;
-  cursor: not-allowed !important;
-}
-
-:deep(.el-message) {
-  z-index: 999999 !important;
+/* 全屏模式样式 */
+.fullscreen .terms-container,
+.fullscreen :deep(.vis-network) {
+  height: calc(100% - 60px) !important;
 }
 </style>
