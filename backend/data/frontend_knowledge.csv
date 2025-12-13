@@ -1,642 +1,642 @@
 source,relation,target,weight
 HTML,核心版本,HTML4,1
-HTML,核心版本,HTML5,1
-HTML5,核心特性,语义化标签,1
-HTML5,核心特性,Canvas,1
-HTML5,核心特性,本地存储,1
-HTML5,核心特性,多媒体(Video/Audio),1
-HTML5,核心特性,Web API,1
-HTML5,核心特性,响应式设计,1
-HTML,元素类型,根元素,1
-根元素,具体元素,主根元素html,1
-根元素,具体元素,分区根元素body,1
-HTML,元数据标签,base,1
-HTML,元数据标签,head,1
-HTML,元数据标签,title,1
-HTML,元数据标签,meta,1
-HTML,元数据标签,link,1
-HTML,元数据标签,style,1
-HTML,内容分区标签,header,1
-HTML,内容分区标签,footer,1
-HTML,内容分区标签,p,1
-HTML,内容分区标签,article,1
-HTML,内容分区标签,nav,1
-HTML,内容分区标签,section,1
-HTML,内容分区标签,address,1
-HTML,内容类型,块级内容 div、dir,1
-HTML,内容类型,文字内容 a、b、strong,1
-HTML,多媒体标签,video,1
-HTML,多媒体标签,img,1
-HTML,多媒体标签,figure,1
-HTML,多媒体标签,audio,1
+HTML,核心版本,HTML5,5
+HTML5,核心特性,语义化标签,5
+HTML5,核心特性,Canvas,3
+HTML5,核心特性,本地存储,4
+HTML5,核心特性,多媒体(Video/Audio),4
+HTML5,核心特性,Web API,4
+HTML5,核心特性,响应式设计,5
+HTML,元素类型,根元素,5
+根元素,具体元素,主根元素html,5
+根元素,具体元素,分区根元素body,5
+HTML,元数据标签,base,2
+HTML,元数据标签,head,5
+HTML,元数据标签,title,5
+HTML,元数据标签,meta,4
+HTML,元数据标签,link,4
+HTML,元数据标签,style,4
+HTML,内容分区标签,header,4
+HTML,内容分区标签,footer,4
+HTML,内容分区标签,p,5
+HTML,内容分区标签,article,3
+HTML,内容分区标签,nav,4
+HTML,内容分区标签,section,3
+HTML,内容分区标签,address,2
+HTML,内容类型,块级内容 div、dir,5
+HTML,内容类型,文字内容 a、b、strong,5
+HTML,多媒体标签,video,4
+HTML,多媒体标签,img,5
+HTML,多媒体标签,figure,2
+HTML,多媒体标签,audio,3
 HTML,内嵌标签,object,1
-HTML,内嵌标签,iframe,1
-HTML,脚本标签,script,1
+HTML,内嵌标签,iframe,3
+HTML,脚本标签,script,5
 HTML,脚本标签,noscript,1
-HTML,脚本标签,canvas,1
-HTML,表格标签,tbody,1
-HTML,表格标签,table,1
-HTML,表单标签,input,1
-HTML,表单标签,textarea,1
-HTML,表单标签,form,1
-HTML,表单标签,button,1
+HTML,脚本标签,canvas,3
+HTML,表格标签,tbody,3
+HTML,表格标签,table,3
+HTML,表单标签,input,5
+HTML,表单标签,textarea,4
+HTML,表单标签,form,5
+HTML,表单标签,button,5
 HTML,可交互标签,menuitem,1
-HTML,可交互标签,menu,1
-HTML,内联文本标签,abbr,1
-HTML,内联文本标签,br,1
-HTML,内联文本标签,cite,1
-HTML,内联文本标签,code,1
-HTML,内联文本标签,em,1
-HTML,内联文本标签,span,1
-HTML,常用属性,class,1
-HTML,常用属性,id,1
-HTML,常用属性,style,1
-HTML,常用属性,title,1
+HTML,可交互标签,menu,2
+HTML,内联文本标签,abbr,2
+HTML,内联文本标签,br,4
+HTML,内联文本标签,cite,2
+HTML,内联文本标签,code,3
+HTML,内联文本标签,em,3
+HTML,内联文本标签,span,5
+HTML,常用属性,class,5
+HTML,常用属性,id,5
+HTML,常用属性,style,4
+HTML,常用属性,title,3
 HTML,全局属性,accesskey,1
-HTML,全局属性,contenteditable,1
-HTML,全局属性,dir,1
-HTML,全局属性,draggable,1
-HTML,全局属性,hidden,1
-HTML,全局属性,lang,1
-HTML,全局属性,spellcheck,1
-HTML,全局属性,tabindex,1
+HTML,全局属性,contenteditable,3
+HTML,全局属性,dir,2
+HTML,全局属性,draggable,3
+HTML,全局属性,hidden,3
+HTML,全局属性,lang,3
+HTML,全局属性,spellcheck,2
+HTML,全局属性,tabindex,3
 HTML,全局属性,translate,1
-HTML,窗口事件,load,1
-HTML,窗口事件,unload,1
-HTML,窗口事件,resize,1
-HTML,窗口事件,scroll,1
-HTML,表单事件,submit,1
-HTML,表单事件,reset,1
-HTML,表单事件,change,1
-HTML,表单事件,focus,1
-HTML,表单事件,blur,1
+HTML,窗口事件,load,4
+HTML,窗口事件,unload,2
+HTML,窗口事件,resize,4
+HTML,窗口事件,scroll,4
+HTML,表单事件,submit,5
+HTML,表单事件,reset,2
+HTML,表单事件,change,5
+HTML,表单事件,focus,4
+HTML,表单事件,blur,4
 CSS,核心版本,CSS2,1
-CSS,核心版本,CSS3,1
-CSS3,核心特性,Flex布局,1
-CSS3,核心特性,Grid布局,1
-CSS3,核心特性,动画(Animation),1
-CSS3,核心特性,过渡(Transition),1
-CSS3,核心特性,媒体查询,1
-CSS3,核心特性,变量(var),1
-CSS,预处理器,Sass/SCSS,1
-CSS,预处理器,Less,1
-CSS,预处理器,Stylus,1
-CSS,后处理器,PostCSS,1
-CSS,UI框架,Tailwind CSS,1
-CSS,UI框架,Element Plus,1
-CSS,UI框架,Ant Design,1
-CSS,UI框架,Vuetify,1
-CSS,@规则,@import,1
-CSS,@规则,@charset,1
-CSS,@规则,@media,1
-CSS,@规则,@supports,1
-CSS,@规则,@keyframes,1
+CSS,核心版本,CSS3,5
+CSS3,核心特性,Flex布局,5
+CSS3,核心特性,Grid布局,4
+CSS3,核心特性,动画(Animation),4
+CSS3,核心特性,过渡(Transition),4
+CSS3,核心特性,媒体查询,5
+CSS3,核心特性,变量(var),4
+CSS,预处理器,Sass/SCSS,4
+CSS,预处理器,Less,3
+CSS,预处理器,Stylus,2
+CSS,后处理器,PostCSS,4
+CSS,UI框架,Tailwind CSS,5
+CSS,UI框架,Element Plus,4
+CSS,UI框架,Ant Design,4
+CSS,UI框架,Vuetify,3
+CSS,@规则,@import,3
+CSS,@规则,@charset,2
+CSS,@规则,@media,5
+CSS,@规则,@supports,3
+CSS,@规则,@keyframes,4
 CSS,@规则,@document,1
-CSS,核心机制,层叠规则,1
-CSS,核心机制,继承机制,1
-CSS,核心机制,特异性计算,1
-CSS,取值类型,关键字,1
-CSS,取值类型,数值,1
-CSS,取值类型,长度,1
-CSS,取值类型,百分比,1
-CSS,取值类型,颜色,1
-CSS,取值类型,函数,1
-CSS,单位类型,绝对单位（px/in/cm）,1
-CSS,单位类型,相对单位（em/rem/%/vw/vh）,1
-CSS,单位类型,角度（deg/rad）,1
-CSS,单位类型,时间（s/ms）,1
-CSS,选择器类型,元素选择器,1
-CSS,选择器类型,类选择器,1
-CSS,选择器类型,ID选择器,1
-CSS,选择器类型,通配选择器,1
-CSS,选择器类型,后代选择器,1
-CSS,选择器类型,子选择器,1
-CSS,选择器类型,相邻兄弟选择器,1
-CSS,选择器类型,通用兄弟选择器,1
-CSS,选择器类型,结构伪类（:nth-child）,1
-CSS,选择器类型,状态伪类（:hover/:focus）,1
-CSS,选择器类型,目标伪类（:target）,1
-CSS,选择器类型,伪元素选择器::before/::after,1
-CSS,选择器类型,伪元素选择器::first-letter/::first-line,1
-CSS,布局属性,display（block/inline-flex/grid）,1
-CSS,布局属性,position（static/relative/absolute）,1
-CSS,布局属性,float/clear,1
-CSS,盒模型属性,width/height,1
-CSS,盒模型属性,padding,1
-CSS,盒模型属性,border,1
-CSS,盒模型属性,margin,1
-CSS,盒模型属性,box-sizing（content-box/border-box）,1
-CSS,视觉格式化,正常流,1
-CSS,视觉格式化,弹性盒子,1
-CSS,视觉格式化,网格布局,1
-CSS,视觉格式化,多列布局,1
-CSS,Flexbox属性,弹性容器属性（flex-direction/justify-content）,1
-CSS,Flexbox属性,弹性项目属性（flex-grow/flex-shrink）,1
-CSS,Grid属性,网格容器（grid-template-columns）,1
-CSS,Grid属性,网格项（grid-column-start/end）,1
-CSS,多列布局属性,column-count,1
-CSS,多列布局属性,column-gap,1
-CSS,多列布局属性,break-inside,1
-CSS,视觉样式,background-image/clip/origin,1
-CSS,视觉样式,border-radius,1
-CSS,视觉样式,box-shadow,1
-CSS,文本样式,font-family/size/weight,1
-CSS,文本样式,line-height,1
-CSS,文本样式,text-align,1
-CSS,文本样式,text-shadow,1
-CSS,列表表格样式,list-style-type,1
-CSS,列表表格样式,table-layout,1
-CSS,列表表格样式,border-collapse,1
-CSS,动态效果,transition-property/duration/timing-function,1
-CSS,动态效果,transform（translate/scale/rotate）,1
-CSS,动态效果,transform-origin,1
-CSS,动态效果,animation-fill-mode/direction,1
-CSS,响应式设计,媒体查询@media (max-width),1
-CSS,响应式设计,设备方向（orientation）,1
-CSS,响应式设计,分辨率（resolution）,1
-CSS,响应式设计,viewport meta标签,1
-CSS,响应式设计,vw/vh单位,1
-CSS,响应式设计,rem/em单位,1
-CSS,性能优化,repaint/reflow优化,1
-CSS,性能优化,CSS containment,1
-CSS,资源加载,链接方式（link/import）,1
-CSS,资源加载,预加载,1
-CSS,资源加载,懒加载,1
-JavaScript,核心版本,ES5,1
-JavaScript,核心版本,ES6+,1
-JavaScript,核心版本,ES2020+,1
-ES6+,核心特性,箭头函数,1
-ES6+,核心特性,解构赋值,1
-ES6+,核心特性,模板字符串,1
-ES6+,核心特性,类(Class),1
-ES6+,核心特性,模块化(import/export),1
-ES6+,核心特性,Promise,1
-ES6+,核心特性,Async/Await,1
-ES6+,核心特性,Map/Set,1
-ES6+,核心特性,数组方法扩展,1
-JavaScript,数据类型,基本类型,1
-JavaScript,数据类型,引用类型,1
-JavaScript,数据类型,BigInt,1
-JavaScript,数据类型,Symbol,1
-基本类型,具体类型,String,1
-基本类型,具体类型,Number,1
-基本类型,具体类型,Boolean,1
-基本类型,具体类型,Null,1
-基本类型,具体类型,Undefined,1
-基本类型,具体类型,Symbol (唯一值),1
-JavaScript,运行环境,浏览器,1
-JavaScript,运行环境,Node.js,1
-JavaScript,异步编程,回调函数,1
-JavaScript,异步编程,Promise,1
-JavaScript,异步编程,Async/Await,1
-JavaScript,异步编程,Generator,1
-JavaScript,框架,Vue,1
-JavaScript,框架,React,1
-JavaScript,框架,Angular,1
-JavaScript,超集,TypeScript,1
+CSS,核心机制,层叠规则,5
+CSS,核心机制,继承机制,5
+CSS,核心机制,特异性计算,5
+CSS,取值类型,关键字,3
+CSS,取值类型,数值,5
+CSS,取值类型,长度,5
+CSS,取值类型,百分比,5
+CSS,取值类型,颜色,5
+CSS,取值类型,函数,4
+CSS,单位类型,绝对单位（px/in/cm）,4
+CSS,单位类型,相对单位（em/rem/%/vw/vh）,5
+CSS,单位类型,角度（deg/rad）,3
+CSS,单位类型,时间（s/ms）,3
+CSS,选择器类型,元素选择器,5
+CSS,选择器类型,类选择器,5
+CSS,选择器类型,ID选择器,4
+CSS,选择器类型,通配选择器,3
+CSS,选择器类型,后代选择器,5
+CSS,选择器类型,子选择器,4
+CSS,选择器类型,相邻兄弟选择器,3
+CSS,选择器类型,通用兄弟选择器,3
+CSS,选择器类型,结构伪类（:nth-child）,4
+CSS,选择器类型,状态伪类（:hover/:focus）,5
+CSS,选择器类型,目标伪类（:target）,2
+CSS,选择器类型,伪元素选择器::before/::after,5
+CSS,选择器类型,伪元素选择器::first-letter/::first-line,2
+CSS,布局属性,display（block/inline-flex/grid）,5
+CSS,布局属性,position（static/relative/absolute）,5
+CSS,布局属性,float/clear,2
+CSS,盒模型属性,width/height,5
+CSS,盒模型属性,padding,5
+CSS,盒模型属性,border,5
+CSS,盒模型属性,margin,5
+CSS,盒模型属性,box-sizing（content-box/border-box）,5
+CSS,视觉格式化,正常流,5
+CSS,视觉格式化,弹性盒子,5
+CSS,视觉格式化,网格布局,4
+CSS,视觉格式化,多列布局,2
+CSS,Flexbox属性,弹性容器属性（flex-direction/justify-content）,5
+CSS,Flexbox属性,弹性项目属性（flex-grow/flex-shrink）,5
+CSS,Grid属性,网格容器（grid-template-columns）,4
+CSS,Grid属性,网格项（grid-column-start/end）,4
+CSS,多列布局属性,column-count,2
+CSS,多列布局属性,column-gap,2
+CSS,多列布局属性,break-inside,2
+CSS,视觉样式,background-image/clip/origin,4
+CSS,视觉样式,border-radius,5
+CSS,视觉样式,box-shadow,4
+CSS,文本样式,font-family/size/weight,5
+CSS,文本样式,line-height,5
+CSS,文本样式,text-align,5
+CSS,文本样式,text-shadow,2
+CSS,列表表格样式,list-style-type,3
+CSS,列表表格样式,table-layout,2
+CSS,列表表格样式,border-collapse,3
+CSS,动态效果,transition-property/duration/timing-function,4
+CSS,动态效果,transform（translate/scale/rotate）,4
+CSS,动态效果,transform-origin,3
+CSS,动态效果,animation-fill-mode/direction,3
+CSS,响应式设计,媒体查询@media (max-width),5
+CSS,响应式设计,设备方向（orientation）,2
+CSS,响应式设计,分辨率（resolution）,2
+CSS,响应式设计,viewport meta标签,5
+CSS,响应式设计,vw/vh单位,5
+CSS,响应式设计,rem/em单位,5
+CSS,性能优化,repaint/reflow优化,4
+CSS,性能优化,CSS containment,2
+CSS,资源加载,链接方式（link/import）,4
+CSS,资源加载,预加载,3
+CSS,资源加载,懒加载,3
+JavaScript,核心版本,ES5,3
+JavaScript,核心版本,ES6+,5
+JavaScript,核心版本,ES2020+,4
+ES6+,核心特性,箭头函数,5
+ES6+,核心特性,解构赋值,5
+ES6+,核心特性,模板字符串,5
+ES6+,核心特性,类(Class),4
+ES6+,核心特性,模块化(import/export),5
+ES6+,核心特性,Promise,5
+ES6+,核心特性,Async/Await,5
+ES6+,核心特性,Map/Set,4
+ES6+,核心特性,数组方法扩展,5
+JavaScript,数据类型,基本类型,5
+JavaScript,数据类型,引用类型,5
+JavaScript,数据类型,BigInt,2
+JavaScript,数据类型,Symbol,3
+基本类型,具体类型,String,5
+基本类型,具体类型,Number,5
+基本类型,具体类型,Boolean,5
+基本类型,具体类型,Null,5
+基本类型,具体类型,Undefined,5
+基本类型,具体类型,Symbol (唯一值),3
+JavaScript,运行环境,浏览器,5
+JavaScript,运行环境,Node.js,4
+JavaScript,异步编程,回调函数,3
+JavaScript,异步编程,Promise,5
+JavaScript,异步编程,Async/Await,5
+JavaScript,异步编程,Generator,2
+JavaScript,框架,Vue,5
+JavaScript,框架,React,5
+JavaScript,框架,Angular,3
+JavaScript,超集,TypeScript,5
 JavaScript,变量声明,var,1
-JavaScript,变量声明,let,1
-JavaScript,变量声明,const,1
-JavaScript,变量类型,引用值,1
-JavaScript,变量类型,原始值,1
-JavaScript,类型处理,类型检测,1
-JavaScript,类型处理,类型转换 (显式与隐式),1
-JavaScript,运算符,算术、赋值、比较、逻辑运算符,1
-JavaScript,运算符,位运算符,1
-JavaScript,运算符,三元运算符,1
-JavaScript,流程控制,"if...else, switch",1
-JavaScript,流程控制,"for, while, do...while",1
-JavaScript,流程控制,for...in (遍历键),1
-JavaScript,流程控制,for...of (遍历值 - 需可迭代),1
-JavaScript,函数定义,函数声明,1
-JavaScript,函数定义,函数表达式,1
-JavaScript,函数定义,箭头函数,1
-JavaScript,函数参数,arguments 对象,1
-JavaScript,函数参数,Rest 参数 (...),1
-JavaScript,函数参数,Spread 运算符 (...),1
-JavaScript,函数参数,默认参数,1
-JavaScript,作用域,全局、函数、块级作用域,1
-JavaScript,作用域,词法作用域,1
-JavaScript,作用域,闭包,1
-JavaScript,执行上下文,this 关键字,1
-JavaScript,执行上下文,全局上下文,1
-JavaScript,执行上下文,函数调用,1
-JavaScript,执行上下文,方法调用,1
-JavaScript,执行上下文,构造函数调用,1
-JavaScript,执行上下文,"call, apply, bind (显式绑定)",1
-JavaScript,函数特性,柯里化 (Currying),1
-JavaScript,函数特性,函数组合 (Composition),1
-JavaScript,函数特性,高阶函数,1
-JavaScript,内置对象,Object,1
-Object,核心特性,属性描述符 (Property Descriptors),1
-Object,核心特性,getters / setters,1
-Object,方法,"Object.keys, values, entries",1
-Object,方法,"Object.create, Object.assign",1
-JavaScript,内置对象,Array,1
-Array,常用方法,"map, filter, reduce, find",1
-Array,常用方法,"splice, slice",1
-Array,常用方法,"push, pop, shift, unshift",1
-Array,常用方法,"Array.from, Array.of",1
-JavaScript,内置对象,String,1
-String,关联特性,String (常用方法),1
-JavaScript,内置对象,Map / Set,1
-JavaScript,内置对象,WeakMap / WeakSet,1
-WeakMap / WeakSet,核心特性,弱引用,1
-WeakMap / WeakSet,关联机制,垃圾回收,1
-垃圾回收,实现方式,标记清理,1
-垃圾回收,实现方式,引用计数,1
-JavaScript,内置对象,JSON,1
-JSON,方法,JSON.stringify,1
-JSON,方法,JSON.parse,1
-JavaScript,内置对象,Date,1
-JavaScript,语法特性,数组解构,1
-JavaScript,语法特性,对象解构,1
-JavaScript,模块化,ES Modules,1
-ES Modules,语法,import,1
-ES Modules,语法,export / export default,1
-ES Modules,语法,动态导入 import(),1
-JavaScript,模块化,CommonJS (Node.js),1
-CommonJS (Node.js),语法,require(),1
-CommonJS (Node.js),语法,module.exports / exports,1
+JavaScript,变量声明,let,5
+JavaScript,变量声明,const,5
+JavaScript,变量类型,引用值,5
+JavaScript,变量类型,原始值,5
+JavaScript,类型处理,类型检测,4
+JavaScript,类型处理,类型转换 (显式与隐式),4
+JavaScript,运算符,算术、赋值、比较、逻辑运算符,5
+JavaScript,运算符,位运算符,2
+JavaScript,运算符,三元运算符,5
+JavaScript,流程控制,"if...else, switch",5
+JavaScript,流程控制,"for, while, do...while",5
+JavaScript,流程控制,for...in (遍历键),3
+JavaScript,流程控制,for...of (遍历值 - 需可迭代),4
+JavaScript,函数定义,函数声明,5
+JavaScript,函数定义,函数表达式,4
+JavaScript,函数定义,箭头函数,5
+JavaScript,函数参数,arguments 对象,3
+JavaScript,函数参数,Rest 参数 (...),5
+JavaScript,函数参数,Spread 运算符 (...),5
+JavaScript,函数参数,默认参数,5
+JavaScript,作用域,全局、函数、块级作用域,5
+JavaScript,作用域,词法作用域,4
+JavaScript,作用域,闭包,5
+JavaScript,执行上下文,this 关键字,5
+JavaScript,执行上下文,全局上下文,3
+JavaScript,执行上下文,函数调用,4
+JavaScript,执行上下文,方法调用,4
+JavaScript,执行上下文,构造函数调用,4
+JavaScript,执行上下文,"call, apply, bind (显式绑定)",4
+JavaScript,函数特性,柯里化 (Currying),3
+JavaScript,函数特性,函数组合 (Composition),3
+JavaScript,函数特性,高阶函数,4
+JavaScript,内置对象,Object,5
+Object,核心特性,属性描述符 (Property Descriptors),3
+Object,核心特性,getters / setters,4
+Object,方法,"Object.keys, values, entries",5
+Object,方法,"Object.create, Object.assign",4
+JavaScript,内置对象,Array,5
+Array,常用方法,"map, filter, reduce, find",5
+Array,常用方法,"splice, slice",4
+Array,常用方法,"push, pop, shift, unshift",5
+Array,常用方法,"Array.from, Array.of",3
+JavaScript,内置对象,String,5
+String,关联特性,String (常用方法),5
+JavaScript,内置对象,Map / Set,4
+JavaScript,内置对象,WeakMap / WeakSet,2
+WeakMap / WeakSet,核心特性,弱引用,2
+WeakMap / WeakSet,关联机制,垃圾回收,3
+垃圾回收,实现方式,标记清理,3
+垃圾回收,实现方式,引用计数,2
+JavaScript,内置对象,JSON,5
+JSON,方法,JSON.stringify,5
+JSON,方法,JSON.parse,5
+JavaScript,内置对象,Date,4
+JavaScript,语法特性,数组解构,5
+JavaScript,语法特性,对象解构,5
+JavaScript,模块化,ES Modules,5
+ES Modules,语法,import,5
+ES Modules,语法,export / export default,5
+ES Modules,语法,动态导入 import(),4
+JavaScript,模块化,CommonJS (Node.js),4
+CommonJS (Node.js),语法,require(),4
+CommonJS (Node.js),语法,module.exports / exports,4
 JavaScript,模块化,AMD / UMD (历史),1
-JavaScript,错误处理,异常,1
-JavaScript,错误处理,捕获,1
-JavaScript,错误处理,扩展异常,1
-JavaScript,错误处理,全局捕获,1
-JavaScript,错误处理,同步捕获,1
-JavaScript,错误处理,异步捕获,1
-JavaScript,错误处理,抛出,1
-JavaScript,错误类型,"SyntaxError, TypeError, ReferenceError...",1
-JavaScript,核心调度机制,事件循环,1
-事件循环,核心组成,调用栈,1
-事件循环,核心组成,Web APIs,1
-事件循环,核心组成,任务队列,1
-事件循环,任务类型,宏任务 (Macro Task),1
-事件循环,任务类型,微任务 (Micro Task),1
-Promise,核心状态,"期约结果 (Pending, Fulfilled, Rejected)",1
-Promise,特性,期约扩展,1
-Promise,特性,期约连锁,1
-Promise,特性,期约链,1
-Promise,方法,.then (处理成功),1
-Promise,方法,.catch (处理失败),1
-Promise,方法,.finally (无论成功失败),1
-Promise,静态方法,Promise.all (全部成功),1
-Promise,静态方法,Promise.race (最快返回),1
-Promise,静态方法,Promise.allSettled (全部完成),1
-Promise,静态方法,Promise.any (任一成功),1
-async / await,特性,Promise 的语法糖,1
-async / await,错误处理,try...catch (异步错误和捕获),1
-JavaScript,迭代协议,迭代器协议 (Iterator Protocol),1
-迭代器协议 (Iterator Protocol),核心方法,next() 方法,1
-迭代器协议 (Iterator Protocol),返回格式,"返回 { value, done }",1
-JavaScript,迭代协议,可迭代协议 (Iterable Protocol),1
-可迭代协议 (Iterable Protocol),核心标识,[Symbol.iterator],1
-生成器,核心语法,yield (暂停执行),1
-生成器,核心语法,next(value) (恢复执行并传递值),1
-生成器,核心语法,return() / throw(),1
-生成器,类型,异步生成器 (Async Generators),1
-代理,捕获器类型,代理捕获器,1
-代理,捕获器规则,捕获器不变式,1
-代理,捕获器规则,捕获器参数,1
-代理,特性,代理,1
-代理,特性,多层代理,1
+JavaScript,错误处理,异常,4
+JavaScript,错误处理,捕获,4
+JavaScript,错误处理,扩展异常,2
+JavaScript,错误处理,全局捕获,3
+JavaScript,错误处理,同步捕获,4
+JavaScript,错误处理,异步捕获,4
+JavaScript,错误处理,抛出,4
+JavaScript,错误类型,"SyntaxError, TypeError, ReferenceError...",4
+JavaScript,核心调度机制,事件循环,5
+事件循环,核心组成,调用栈,4
+事件循环,核心组成,Web APIs,4
+事件循环,核心组成,任务队列,4
+事件循环,任务类型,宏任务 (Macro Task),5
+事件循环,任务类型,微任务 (Micro Task),5
+Promise,核心状态,"期约结果 (Pending, Fulfilled, Rejected)",5
+Promise,特性,期约扩展,2
+Promise,特性,期约连锁,4
+Promise,特性,期约链,4
+Promise,方法,.then (处理成功),5
+Promise,方法,.catch (处理失败),5
+Promise,方法,.finally (无论成功失败),4
+Promise,静态方法,Promise.all (全部成功),5
+Promise,静态方法,Promise.race (最快返回),3
+Promise,静态方法,Promise.allSettled (全部完成),4
+Promise,静态方法,Promise.any (任一成功),3
+async / await,特性,Promise 的语法糖,5
+async / await,错误处理,try...catch (异步错误和捕获),5
+JavaScript,迭代协议,迭代器协议 (Iterator Protocol),2
+迭代器协议 (Iterator Protocol),核心方法,next() 方法,2
+迭代器协议 (Iterator Protocol),返回格式,"返回 { value, done }",2
+JavaScript,迭代协议,可迭代协议 (Iterable Protocol),3
+可迭代协议 (Iterable Protocol),核心标识,[Symbol.iterator],3
+生成器,核心语法,yield (暂停执行),2
+生成器,核心语法,next(value) (恢复执行并传递值),2
+生成器,核心语法,return() / throw(),2
+生成器,类型,异步生成器 (Async Generators),2
+代理,捕获器类型,代理捕获器,3
+代理,捕获器规则,捕获器不变式,2
+代理,捕获器规则,捕获器参数,2
+代理,特性,代理,4
+代理,特性,多层代理,2
 代理,特性,可撤销代理,1
-Reflect,方法,"Reflect.get(), Reflect.set()",1
-Reflect,特性,确保 receiver 的正确传递,1
-JavaScript,基本数据类型,Symbol,1
-Symbol,常用标识,Symbol.iterator,1
-Symbol,常用标识,Symbol.toPrimitive,1
-Symbol,常用标识,Symbol.hasInstance,1
-TypeScript,核心特性,静态类型,1
-TypeScript,核心特性,接口(Interface),1
-TypeScript,核心特性,泛型,1
-TypeScript,核心特性,类型推断,1
-TypeScript,编译目标,ES5,1
-TypeScript,编译目标,ES6+,1
-TypeScript,适配框架,Vue3,1
-TypeScript,适配框架,React,1
-TypeScript,类型系统,类型注解,1
-TypeScript,类型系统,类型推断,1
-TypeScript,类型系统,类型别名,1
-类型别名,语法,type 关键字,1
-TypeScript,基础类型,any,1
-TypeScript,基础类型,unknown,1
-TypeScript,基础类型,void,1
-TypeScript,基础类型,never,1
-TypeScript,基础类型,元组,1
-TypeScript,基础类型,枚举,1
-枚举,类型,数字枚举,1
-枚举,类型,字符串枚举,1
-枚举,类型,常量枚举 (const enum),1
-接口,核心特性,定义对象形态,1
-接口,核心特性,可选属性 (?),1
-接口,核心特性,只读属性 (readonly),1
-接口,核心特性,函数类型,1
-接口,核心特性,可索引类型,1
-接口,核心特性,继承接口 (extends),1
-接口,核心特性,实现接口 (implements),1
-泛型,应用场景,泛型函数,1
-泛型,应用场景,泛型接口,1
-泛型,应用场景,泛型类,1
-泛型,约束方式,泛型约束,1
-泛型约束,语法,extends 关键字,1
-泛型,特性,泛型默认值,1
-TypeScript,高级类型,联合类型,1
-TypeScript,高级类型,交叉类型 &,1
-TypeScript,高级类型,字面量类型,1
-TypeScript,高级类型,类型守卫,1
-类型守卫,实现方式,typeof,1
-类型守卫,实现方式,instanceof,1
-类型守卫,实现方式,in,1
-类型守卫,实现方式,自定义守卫 (is),1
-TypeScript,高级类型,可空类型,1
-可空类型,配置,strictNullChecks,1
-TypeScript,高级类型,条件类型,1
-条件类型,语法,T extends U ? X : Y,1
-条件类型,语法,infer 关键字,1
-TypeScript,高级类型,映射类型,1
-映射类型,语法,[K in keyof T],1
-映射类型,内置工具,Partial<T>,1
-映射类型,内置工具,Required<T>,1
-映射类型,内置工具,Readonly<T>,1
-映射类型,内置工具,Record<K，T>,1
-映射类型,内置工具,Pick<T，K>,1
-映射类型,内置工具,Omit<T，K>,1
-映射类型,内置工具,Exclude<T，U>,1
-映射类型,内置工具,Extract<T，U>,1
-映射类型,内置工具,NonNullable<T>,1
-映射类型,内置工具,Parameters<T>,1
-映射类型,内置工具,ReturnType<T>,1
-TypeScript,型变,协变 (Covariance),1
-TypeScript,型变,逆变 (Contravariance),1
+Reflect,方法,"Reflect.get(), Reflect.set()",3
+Reflect,特性,确保 receiver 的正确传递,3
+JavaScript,基本数据类型,Symbol,3
+Symbol,常用标识,Symbol.iterator,3
+Symbol,常用标识,Symbol.toPrimitive,2
+Symbol,常用标识,Symbol.hasInstance,2
+TypeScript,核心特性,静态类型,5
+TypeScript,核心特性,接口(Interface),5
+TypeScript,核心特性,泛型,4
+TypeScript,核心特性,类型推断,5
+TypeScript,编译目标,ES5,3
+TypeScript,编译目标,ES6+,5
+TypeScript,适配框架,Vue3,5
+TypeScript,适配框架,React,5
+TypeScript,类型系统,类型注解,5
+TypeScript,类型系统,类型推断,5
+TypeScript,类型系统,类型别名,5
+类型别名,语法,type 关键字,5
+TypeScript,基础类型,any,4
+TypeScript,基础类型,unknown,4
+TypeScript,基础类型,void,5
+TypeScript,基础类型,never,3
+TypeScript,基础类型,元组,3
+TypeScript,基础类型,枚举,3
+枚举,类型,数字枚举,3
+枚举,类型,字符串枚举,3
+枚举,类型,常量枚举 (const enum),3
+接口,核心特性,定义对象形态,5
+接口,核心特性,可选属性 (?),5
+接口,核心特性,只读属性 (readonly),4
+接口,核心特性,函数类型,4
+接口,核心特性,可索引类型,3
+接口,核心特性,继承接口 (extends),5
+接口,核心特性,实现接口 (implements),4
+泛型,应用场景,泛型函数,4
+泛型,应用场景,泛型接口,4
+泛型,应用场景,泛型类,3
+泛型,约束方式,泛型约束,4
+泛型约束,语法,extends 关键字,4
+泛型,特性,泛型默认值,3
+TypeScript,高级类型,联合类型,5
+TypeScript,高级类型,交叉类型 &,4
+TypeScript,高级类型,字面量类型,4
+TypeScript,高级类型,类型守卫,4
+类型守卫,实现方式,typeof,5
+类型守卫,实现方式,instanceof,5
+类型守卫,实现方式,in,4
+类型守卫,实现方式,自定义守卫 (is),4
+TypeScript,高级类型,可空类型,3
+可空类型,配置,strictNullChecks,4
+TypeScript,高级类型,条件类型,3
+条件类型,语法,T extends U ? X : Y,3
+条件类型,语法,infer 关键字,3
+TypeScript,高级类型,映射类型,3
+映射类型,语法,[K in keyof T],3
+映射类型,内置工具,Partial<T>,5
+映射类型,内置工具,Required<T>,4
+映射类型,内置工具,Readonly<T>,5
+映射类型,内置工具,Record<K，T>,5
+映射类型,内置工具,Pick<T，K>,5
+映射类型,内置工具,Omit<T，K>,5
+映射类型,内置工具,Exclude<T，U>,3
+映射类型,内置工具,Extract<T，U>,3
+映射类型,内置工具,NonNullable<T>,3
+映射类型,内置工具,Parameters<T>,3
+映射类型,内置工具,ReturnType<T>,3
+TypeScript,型变,协变 (Covariance),2
+TypeScript,型变,逆变 (Contravariance),2
 TypeScript,型变,双向协变 (Bivariance),1
-TypeScript,模块,命名空间 (旧),1
-TypeScript,模块,ES 模块,1
-TypeScript,声明文件,声明文件 (.d.ts),1
-声明文件 (.d.ts),语法,declare 关键字,1
-声明文件 (.d.ts),依赖,@types,1
-TypeScript,配置文件,tsconfig.json,1
-tsconfig.json,核心配置,compilerOptions,1
-tsconfig.json,核心配置,strict (严格模式),1
-TypeScript,实验性功能,装饰器,1
-装饰器,类型,类装饰器,1
-装饰器,类型,方法装饰器,1
-装饰器,类型,属性装饰器,1
-装饰器,类型,参数装饰器,1
-Vue,核心版本,Vue2,1
-Vue,核心版本,Vue3,1
-Vue2,核心特性,Options API,1
-Vue2,核心特性,响应式数据,1
-Vue2,核心特性,组件化,1
-Vue2,核心特性,生命周期钩子,1
-Vue2,状态管理,Vuex,1
-Vue2,路由,Vue Router 3,1
-Vue2,构建工具,Webpack,1
-Vue2,兼容性,IE11+,1
-Vue3,核心特性,Composition API,1
-Vue3,核心特性,响应式数据(Proxy),1
-Vue3,核心特性,组件化,1
-Vue3,核心特性,生命周期钩子(setup),1
-Vue3,核心特性,Teleport,1
-Vue3,核心特性,Suspense,1
-Vue3,核心特性,Vite适配,1
-Vue3,状态管理,Pinia,1
-Vue3,状态管理,Vuex 4,1
-Vue3,路由,Vue Router 4,1
-Vue3,兼容性,ES6+,1
-Vue3,语法糖,<script setup>,1
-Vue3,组件类型,单文件组件(SFC),1
-Vue3,组件类型,全局组件,1
-Vue3,组件类型,局部组件,1
-Composition API,核心函数,ref,1
-Composition API,核心函数,reactive,1
-Composition API,核心函数,computed,1
-Composition API,核心函数,watch,1
-Composition API,核心函数,watchEffect,1
-Composition API,核心函数,provide/inject,1
-Composition API,核心函数,toRefs,1
-Pinia,核心特性,无嵌套模块,1
-Pinia,核心特性,TypeScript支持,1
-Pinia,核心特性,DevTools集成,1
-Pinia,核心特性,取消mutations,1
-Vue Router,核心功能,路由映射,1
-Vue Router,核心功能,嵌套路由,1
-Vue Router,核心功能,路由守卫,1
-Vue Router,核心功能,路由参数,1
-Vue Router,核心功能,编程式导航,1
-Vue Router,核心功能,命名路由,1
-Vue,核心概念,MVVM 模式,1
-MVVM 模式,核心组成,Virtual DOM (虚拟 DOM),1
-Virtual DOM (虚拟 DOM),核心算法,Diff 算法,1
-Virtual DOM (虚拟 DOM),核心操作,Patch (补丁),1
-Vue,核心概念,nextTick (DOM 更新队列),1
-Vue2,响应式原理,Object.defineProperty,1
-Object.defineProperty,特性,getter / setter,1
-Vue2,响应式原理,数组方法的重写,1
-Vue3,响应式原理,Proxy,1
-Vue3,响应式原理,Reflect,1
-Vue,模板语法,插值,1
-Vue,模板语法,指令,1
-指令,具体指令,"v-bind (动态属性, 简写 :)",1
-指令,具体指令,"v-on (事件监听, 简写 @)",1
-指令,具体指令,v-model (双向绑定),1
-指令,具体指令,v-if / v-else-if / v-else (条件渲染),1
-指令,具体指令,v-show (条件显示),1
-指令,具体指令,v-for (列表渲染),1
-指令,具体指令,v-slot (插槽),1
+TypeScript,模块,命名空间 (旧),2
+TypeScript,模块,ES 模块,5
+TypeScript,声明文件,声明文件 (.d.ts),4
+声明文件 (.d.ts),语法,declare 关键字,4
+声明文件 (.d.ts),依赖,@types,4
+TypeScript,配置文件,tsconfig.json,5
+tsconfig.json,核心配置,compilerOptions,5
+tsconfig.json,核心配置,strict (严格模式),5
+TypeScript,实验性功能,装饰器,2
+装饰器,类型,类装饰器,2
+装饰器,类型,方法装饰器,2
+装饰器,类型,属性装饰器,2
+装饰器,类型,参数装饰器,2
+Vue,核心版本,Vue2,3
+Vue,核心版本,Vue3,5
+Vue2,核心特性,Options API,4
+Vue2,核心特性,响应式数据,4
+Vue2,核心特性,组件化,5
+Vue2,核心特性,生命周期钩子,4
+Vue2,状态管理,Vuex,3
+Vue2,路由,Vue Router 3,3
+Vue2,构建工具,Webpack,4
+Vue2,兼容性,IE11+,2
+Vue3,核心特性,Composition API,5
+Vue3,核心特性,响应式数据(Proxy),5
+Vue3,核心特性,组件化,5
+Vue3,核心特性,生命周期钩子(setup),5
+Vue3,核心特性,Teleport,3
+Vue3,核心特性,Suspense,3
+Vue3,核心特性,Vite适配,5
+Vue3,状态管理,Pinia,5
+Vue3,状态管理,Vuex 4,3
+Vue3,路由,Vue Router 4,5
+Vue3,兼容性,ES6+,5
+Vue3,语法糖,<script setup>,5
+Vue3,组件类型,单文件组件(SFC),5
+Vue3,组件类型,全局组件,3
+Vue3,组件类型,局部组件,5
+Composition API,核心函数,ref,5
+Composition API,核心函数,reactive,5
+Composition API,核心函数,computed,5
+Composition API,核心函数,watch,5
+Composition API,核心函数,watchEffect,4
+Composition API,核心函数,provide/inject,4
+Composition API,核心函数,toRefs,4
+Pinia,核心特性,无嵌套模块,3
+Pinia,核心特性,TypeScript支持,5
+Pinia,核心特性,DevTools集成,4
+Pinia,核心特性,取消mutations,4
+Vue Router,核心功能,路由映射,5
+Vue Router,核心功能,嵌套路由,4
+Vue Router,核心功能,路由守卫,5
+Vue Router,核心功能,路由参数,5
+Vue Router,核心功能,编程式导航,5
+Vue Router,核心功能,命名路由,3
+Vue,核心概念,MVVM 模式,4
+MVVM 模式,核心组成,Virtual DOM (虚拟 DOM),4
+Virtual DOM (虚拟 DOM),核心算法,Diff 算法,3
+Virtual DOM (虚拟 DOM),核心操作,Patch (补丁),3
+Vue,核心概念,nextTick (DOM 更新队列),4
+Vue2,响应式原理,Object.defineProperty,3
+Object.defineProperty,特性,getter / setter,3
+Vue2,响应式原理,数组方法的重写,3
+Vue3,响应式原理,Proxy,5
+Vue3,响应式原理,Reflect,4
+Vue,模板语法,插值,5
+Vue,模板语法,指令,5
+指令,具体指令,"v-bind (动态属性, 简写 :)",5
+指令,具体指令,"v-on (事件监听, 简写 @)",5
+指令,具体指令,v-model (双向绑定),5
+指令,具体指令,v-if / v-else-if / v-else (条件渲染),5
+指令,具体指令,v-show (条件显示),5
+指令,具体指令,v-for (列表渲染),5
+指令,具体指令,v-slot (插槽),5
 Vue2,模板语法,过滤器 (Filters),1
-Vue,模板语法,自定义指令 (Custom Directives),1
-Vue,生命周期,创建阶段 (Creation),1
-创建阶段 (Creation),钩子函数,beforeCreate,1
-创建阶段 (Creation),钩子函数,created,1
-Vue,生命周期,挂载阶段 (Mounting),1
-挂载阶段 (Mounting),钩子函数,beforeMount,1
-挂载阶段 (Mounting),钩子函数,mounted,1
-Vue,生命周期,更新阶段 (Updating),1
-更新阶段 (Updating),钩子函数,beforeUpdate,1
-更新阶段 (Updating),钩子函数,updated,1
-Vue,生命周期,销毁阶段 (Destruction),1
-销毁阶段 (Destruction),钩子函数,beforeUnmount (Vue 3),1
-销毁阶段 (Destruction),钩子函数,beforeDestroy (Vue 2),1
-销毁阶段 (Destruction),钩子函数,unmounted (Vue 3),1
-销毁阶段 (Destruction),钩子函数,destroyed (Vue 2),1
-Vue,组件注册,全局注册,1
-Vue,组件注册,局部注册,1
-Vue,组件通信,Props / $emit,1
-Vue,组件通信,v-model (组件自定义),1
-Vue,组件通信,provide / inject (跨层级),1
-Vue,组件通信,Event Bus (事件总线),1
-Vue,组件通信,$refs,1
-Vue,组件通信,$parent / $root,1
-Vue,插槽,匿名插槽 (Default Slot),1
-Vue,插槽,具名插槽 (Named Slot),1
-Vue,插槽,作用域插槽 (Scoped Slot),1
-Vue,高级特性,keep-alive (内置组件),1
-Vue,高级特性,Mixin (混入),1
-Vue,高级特性,异步组件 (Async Component),1
-Vue,高级特性,render 函数 / h(),1
-Vue3,新组件,Teleport (传送门),1
-Vue3,新组件,Suspense (异步组件占位),1
-Vue3,新组件,Fragments (多根节点),1
-Vue,生态系统,路由管理 (Routing),1
-Vue,生态系统,状态管理 (State Management),1
-Vue,生态系统,构建工具 (Tooling),1
-Vue,生态系统,开发工具,1
-开发工具,具体工具,Vue DevTools (浏览器插件),1
-路由模式,类型,hash (哈希模式),1
-路由模式,类型,history (历史模式),1
-React,核心特性,JSX,1
-React,核心特性,Virtual DOM,1
-React,核心特性,单向数据流,1
-React,核心特性,Hooks,1
-React,状态管理,Redux,1
-React,状态管理,Zustand,1
-React,路由,React Router,1
-React,构建工具,CRA,1
-React,构建工具,Vite,1
-React,UI框架,Ant Design,1
-React,UI框架,MUI,1
-Angular,核心特性,TypeScript原生,1
-Angular,核心特性,依赖注入,1
-Angular,核心特性,双向绑定,1
-前端工程化,核心环节,模块化,1
-前端工程化,核心环节,组件化,1
-前端工程化,核心环节,规范化,1
-前端工程化,核心环节,自动化,1
-前端工程化,构建工具,Vite,1
-前端工程化,构建工具,Webpack,1
-前端工程化,构建工具,Rollup,1
-前端工程化,构建工具,Parcel,1
-前端工程化,包管理工具,npm,1
-前端工程化,包管理工具,yarn,1
-前端工程化,包管理工具,pnpm,1
-前端工程化,代码规范,ESLint,1
-前端工程化,代码规范,Prettier,1
-前端工程化,代码规范,StyleLint,1
-前端工程化,版本控制,Git,1
+Vue,模板语法,自定义指令 (Custom Directives),3
+Vue,生命周期,创建阶段 (Creation),5
+创建阶段 (Creation),钩子函数,beforeCreate,3
+创建阶段 (Creation),钩子函数,created,4
+Vue,生命周期,挂载阶段 (Mounting),5
+挂载阶段 (Mounting),钩子函数,beforeMount,3
+挂载阶段 (Mounting),钩子函数,mounted,5
+Vue,生命周期,更新阶段 (Updating),4
+更新阶段 (Updating),钩子函数,beforeUpdate,3
+更新阶段 (Updating),钩子函数,updated,3
+Vue,生命周期,销毁阶段 (Destruction),4
+销毁阶段 (Destruction),钩子函数,beforeUnmount (Vue 3),4
+销毁阶段 (Destruction),钩子函数,beforeDestroy (Vue 2),3
+销毁阶段 (Destruction),钩子函数,unmounted (Vue 3),4
+销毁阶段 (Destruction),钩子函数,destroyed (Vue 2),3
+Vue,组件注册,全局注册,3
+Vue,组件注册,局部注册,5
+Vue,组件通信,Props / $emit,5
+Vue,组件通信,v-model (组件自定义),4
+Vue,组件通信,provide / inject (跨层级),4
+Vue,组件通信,Event Bus (事件总线),2
+Vue,组件通信,$refs,4
+Vue,组件通信,$parent / $root,2
+Vue,插槽,匿名插槽 (Default Slot),5
+Vue,插槽,具名插槽 (Named Slot),4
+Vue,插槽,作用域插槽 (Scoped Slot),4
+Vue,高级特性,keep-alive (内置组件),4
+Vue,高级特性,Mixin (混入),2
+Vue,高级特性,异步组件 (Async Component),4
+Vue,高级特性,render 函数 / h(),3
+Vue3,新组件,Teleport (传送门),3
+Vue3,新组件,Suspense (异步组件占位),3
+Vue3,新组件,Fragments (多根节点),4
+Vue,生态系统,路由管理 (Routing),5
+Vue,生态系统,状态管理 (State Management),5
+Vue,生态系统,构建工具 (Tooling),5
+Vue,生态系统,开发工具,4
+开发工具,具体工具,Vue DevTools (浏览器插件),5
+路由模式,类型,hash (哈希模式),4
+路由模式,类型,history (历史模式),5
+React,核心特性,JSX,5
+React,核心特性,Virtual DOM,4
+React,核心特性,单向数据流,5
+React,核心特性,Hooks,5
+React,状态管理,Redux,4
+React,状态管理,Zustand,3
+React,路由,React Router,5
+React,构建工具,CRA,3
+React,构建工具,Vite,5
+React,UI框架,Ant Design,4
+React,UI框架,MUI,3
+Angular,核心特性,TypeScript原生,4
+Angular,核心特性,依赖注入,4
+Angular,核心特性,双向绑定,4
+前端工程化,核心环节,模块化,5
+前端工程化,核心环节,组件化,5
+前端工程化,核心环节,规范化,4
+前端工程化,核心环节,自动化,4
+前端工程化,构建工具,Vite,5
+前端工程化,构建工具,Webpack,4
+前端工程化,构建工具,Rollup,3
+前端工程化,构建工具,Parcel,2
+前端工程化,包管理工具,npm,5
+前端工程化,包管理工具,yarn,4
+前端工程化,包管理工具,pnpm,4
+前端工程化,代码规范,ESLint,5
+前端工程化,代码规范,Prettier,5
+前端工程化,代码规范,StyleLint,3
+前端工程化,版本控制,Git,5
 前端工程化,版本控制,SVN,1
-前端工程化,CI/CD,GitHub Actions,1
-前端工程化,CI/CD,Jenkins,1
-前端工程化,测试工具,Jest,1
-前端工程化,测试工具,Vitest,1
-前端工程化,测试工具,Cypress,1
-前端工程化,测试工具,Vue Test Utils,1
-前端工程化,容器化,Docker,1
-前端工程化,部署,云服务器,1
-前端工程化,部署,静态站点(Netlify),1
-Vite,核心特性,快速冷启动,1
-Vite,核心特性,按需编译,1
-Vite,核心特性,ES模块原生支持,1
-Vite,核心特性,热模块替换(HMR),1
-Vite,适配框架,Vue3,1
-Vite,适配框架,React,1
-Vite,适配框架,Preact,1
-Vite,构建产物,ES模块,1
-Vite,构建产物,CommonJS,1
-Webpack,核心特性,模块打包,1
-Webpack,核心特性,Loader,1
-Webpack,核心特性,Plugin,1
-Webpack,核心特性,热模块替换(HMR),1
-Webpack,适配框架,Vue2,1
-Webpack,适配框架,React,1
-前端性能优化,核心维度,加载性能,1
-前端性能优化,核心维度,运行性能,1
-前端性能优化,核心维度,渲染性能,1
-加载性能,优化手段,资源压缩,1
-加载性能,优化手段,CDN加速,1
-加载性能,优化手段,懒加载,1
-加载性能,优化手段,预加载,1
-加载性能,优化手段,HTTP缓存,1
-加载性能,优化手段,HTTP/2,1
-运行性能,优化手段,减少重排重绘,1
-运行性能,优化手段,防抖节流,1
-运行性能,优化手段,虚拟列表,1
-运行性能,优化手段,Web Worker,1
-渲染性能,优化手段,CSSTransform,1
-渲染性能,优化手段,requestAnimationFrame,1
-Vue性能优化,手段,组件懒加载,1
-Vue性能优化,手段,keep-alive缓存,1
-Vue性能优化,手段,v-memo,1
-Vue性能优化,手段,减少响应式数据,1
-前端进阶,核心领域,跨端开发,1
-前端进阶,核心领域,微前端,1
-前端进阶,核心领域,服务端渲染(SSR),1
-跨端开发,技术方案,uni-app,1
-跨端开发,技术方案,Taro,1
-跨端开发,技术方案,Electron,1
-跨端开发,技术方案,React Native,1
-跨端开发,技术方案,Flutter(非前端),1
-微前端,技术方案,qiankun,1
-微前端,技术方案,Module Federation,1
-SSR,技术方案,Nuxt.js(Vue),1
-SSR,技术方案,Next.js(React),1
-SSR,核心优势,SEO优化,1
-SSR,核心优势,首屏加载快,1
-浏览器,核心类型,Chrome,1
-浏览器,核心类型,Safari,1
-浏览器,核心类型,Firefox,1
-客户端,类型,APP,1
-客户端,类型,小程序,1
-客户端,类型,WebView,1
-网络,核心协议,TCP/IP,1
-网络,核心协议,DNS,1
-网络,核心协议,HTTP,1
-网络,核心概念,Domain,1
-WebServer,类型,Nginx,1
-WebServer,类型,Apache HTTP Server,1
-WebServer,类型,CDN,1
-服务端语言,类型,PHP,1
-服务端语言,类型,Java,1
-服务端语言,类型,Golang,1
-行业标准,组织,W3C/WHATWG,1
-W3C/WHATWG,标准,CSS标准,1
-W3C/WHATWG,标准,HTML、XHTML、XML、HTML5标准,1
-W3C/WHATWG,标准,DOM标准,1
-W3C/WHATWG,标准,SVG标准,1
-W3C/WHATWG,标准,小程序标准,1
-行业标准,组织,ECMA-TC39,1
-ECMA-TC39,标准,ECMAScript标准,1
-ECMA-TC39,标准,JavaScript标准,1
-浏览器,API,location,1
-浏览器,API,history,1
-浏览器,API,navigator,1
-浏览器,默认行为,event.preventDefault(),1
-浏览器,表单事件,change\focus\blur\submit,1
-浏览器,网络请求,XHR,1
-浏览器,网络请求,Fetch,1
-浏览器,网络请求,JSONP,1
-浏览器,网络请求,WebSocket,1
-浏览器,权限机制,Cookie,1
-浏览器,权限机制,Session,1
-浏览器,权限机制,OAuth,1
-浏览器,权限机制,SSO,1
-浏览器,权限机制,JWT,1
-浏览器,安全机制,Content Security Policy（CSP）,1
-浏览器,安全机制,CORS,1
-浏览器,安全机制,SQL 注入防护,1
-浏览器,安全机制,XSS防护,1
-浏览器,安全机制,CSRF防护,1
-浏览器,安全机制,MITM防护,1
-浏览器,安全机制,Samesite,1
-浏览器,开发者工具,设备模式,1
-浏览器,开发者工具,元素面板,1
-浏览器,开发者工具,控制台面板,1
-浏览器,开发者工具,源代码面板,1
-浏览器,开发者工具,网络面板,1
-浏览器,开发者工具,性能面板,1
-浏览器,开发者工具,内存面板,1
-浏览器,开发者工具,应用面板,1
-浏览器,开发者工具,安全面板,1
+前端工程化,CI/CD,GitHub Actions,4
+前端工程化,CI/CD,Jenkins,3
+前端工程化,测试工具,Jest,4
+前端工程化,测试工具,Vitest,4
+前端工程化,测试工具,Cypress,3
+前端工程化,测试工具,Vue Test Utils,3
+前端工程化,容器化,Docker,3
+前端工程化,部署,云服务器,4
+前端工程化,部署,静态站点(Netlify),3
+Vite,核心特性,快速冷启动,5
+Vite,核心特性,按需编译,5
+Vite,核心特性,ES模块原生支持,5
+Vite,核心特性,热模块替换(HMR),5
+Vite,适配框架,Vue3,5
+Vite,适配框架,React,5
+Vite,适配框架,Preact,3
+Vite,构建产物,ES模块,5
+Vite,构建产物,CommonJS,3
+Webpack,核心特性,模块打包,5
+Webpack,核心特性,Loader,5
+Webpack,核心特性,Plugin,5
+Webpack,核心特性,热模块替换(HMR),5
+Webpack,适配框架,Vue2,5
+Webpack,适配框架,React,5
+前端性能优化,核心维度,加载性能,5
+前端性能优化,核心维度,运行性能,5
+前端性能优化,核心维度,渲染性能,5
+加载性能,优化手段,资源压缩,5
+加载性能,优化手段,CDN加速,4
+加载性能,优化手段,懒加载,5
+加载性能,优化手段,预加载,4
+加载性能,优化手段,HTTP缓存,5
+加载性能,优化手段,HTTP/2,4
+运行性能,优化手段,减少重排重绘,5
+运行性能,优化手段,防抖节流,5
+运行性能,优化手段,虚拟列表,4
+运行性能,优化手段,Web Worker,3
+渲染性能,优化手段,CSSTransform,4
+渲染性能,优化手段,requestAnimationFrame,4
+Vue性能优化,手段,组件懒加载,5
+Vue性能优化,手段,keep-alive缓存,4
+Vue性能优化,手段,v-memo,3
+Vue性能优化,手段,减少响应式数据,4
+前端进阶,核心领域,跨端开发,4
+前端进阶,核心领域,微前端,3
+前端进阶,核心领域,服务端渲染(SSR),4
+跨端开发,技术方案,uni-app,4
+跨端开发,技术方案,Taro,3
+跨端开发,技术方案,Electron,3
+跨端开发,技术方案,React Native,3
+跨端开发,技术方案,Flutter(非前端),2
+微前端,技术方案,qiankun,3
+微前端,技术方案,Module Federation,3
+SSR,技术方案,Nuxt.js(Vue),4
+SSR,技术方案,Next.js(React),4
+SSR,核心优势,SEO优化,5
+SSR,核心优势,首屏加载快,5
+浏览器,核心类型,Chrome,5
+浏览器,核心类型,Safari,4
+浏览器,核心类型,Firefox,3
+客户端,类型,APP,3
+客户端,类型,小程序,4
+客户端,类型,WebView,3
+网络,核心协议,TCP/IP,3
+网络,核心协议,DNS,3
+网络,核心协议,HTTP,5
+网络,核心概念,Domain,3
+WebServer,类型,Nginx,4
+WebServer,类型,Apache HTTP Server,2
+WebServer,类型,CDN,4
+服务端语言,类型,PHP,2
+服务端语言,类型,Java,3
+服务端语言,类型,Golang,3
+行业标准,组织,W3C/WHATWG,3
+W3C/WHATWG,标准,CSS标准,4
+W3C/WHATWG,标准,HTML、XHTML、XML、HTML5标准,4
+W3C/WHATWG,标准,DOM标准,4
+W3C/WHATWG,标准,SVG标准,3
+W3C/WHATWG,标准,小程序标准,2
+行业标准,组织,ECMA-TC39,3
+ECMA-TC39,标准,ECMAScript标准,5
+ECMA-TC39,标准,JavaScript标准,5
+浏览器,API,location,5
+浏览器,API,history,4
+浏览器,API,navigator,3
+浏览器,默认行为,event.preventDefault(),5
+浏览器,表单事件,change\focus\blur\submit,5
+浏览器,网络请求,XHR,3
+浏览器,网络请求,Fetch,5
+浏览器,网络请求,JSONP,2
+浏览器,网络请求,WebSocket,4
+浏览器,权限机制,Cookie,4
+浏览器,权限机制,Session,3
+浏览器,权限机制,OAuth,3
+浏览器,权限机制,SSO,3
+浏览器,权限机制,JWT,4
+浏览器,安全机制,Content Security Policy（CSP）,3
+浏览器,安全机制,CORS,5
+浏览器,安全机制,SQL 注入防护,4
+浏览器,安全机制,XSS防护,5
+浏览器,安全机制,CSRF防护,5
+浏览器,安全机制,MITM防护,3
+浏览器,安全机制,Samesite,3
+浏览器,开发者工具,设备模式,5
+浏览器,开发者工具,元素面板,5
+浏览器,开发者工具,控制台面板,5
+浏览器,开发者工具,源代码面板,4
+浏览器,开发者工具,网络面板,5
+浏览器,开发者工具,性能面板,3
+浏览器,开发者工具,内存面板,3
+浏览器,开发者工具,应用面板,4
+浏览器,开发者工具,安全面板,2
 调试预览,工具,FireBug,1
-调试预览,工具,Chrome DevTools,1
-调试预览,在线服务,CodePen,1
-调试预览,在线服务,JSFiddle,1
+调试预览,工具,Chrome DevTools,5
+调试预览,在线服务,CodePen,4
+调试预览,在线服务,JSFiddle,3
 编辑器,类型,Atom,1
-编辑器,类型,Visual Studio Code,1
-编辑器,类型,Webstorm,1
-图片编辑器,类型,PhotoShop,1
-图片编辑器,类型,Sketch,1
-性能优化,类型,缓存策略优化,1
-性能优化,类型,渲染优化,1
-性能优化,类型,图片优化,1
-性能优化,类型,资源加载优化,1
+编辑器,类型,Visual Studio Code,5
+编辑器,类型,Webstorm,4
+图片编辑器,类型,PhotoShop,3
+图片编辑器,类型,Sketch,2
+性能优化,类型,缓存策略优化,5
+性能优化,类型,渲染优化,5
+性能优化,类型,图片优化,4
+性能优化,类型,资源加载优化,5
