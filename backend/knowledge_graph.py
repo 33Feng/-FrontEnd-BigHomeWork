@@ -53,28 +53,31 @@ class FrontendKnowledgeGraph:
             print(traceback.format_exc())
             pass
     
-    def get_top_graph_data(self, limit: int = 10) -> Dict:
-        """
-        获取核心图谱数据（按节点度数排序，只显示重要节点）
-        默认只返回10个核心节点，确保初始视图简洁
-        """
-        # 1. 计算所有节点的度（连接数），并按降序排序
+    def get_top_graph_data(self, limit: int = 15) -> Dict:
+        HARD_LIMIT = 15
+        
+        # 2. 计算所有节点的度，按降序排序
         sorted_nodes = sorted(self.G.degree, key=lambda x: x[1], reverse=True)
         
-        # 2. 取前 limit 个节点作为核心节点
-        top_nodes_list = [node for node, degree in sorted_nodes[:limit]]
+        # 3. 取前 15 个节点
+        top_nodes_list = [node for node, degree in sorted_nodes[:HARD_LIMIT]]
         top_nodes_set = set(top_nodes_list)
         
-        # 3. 构建返回的节点列表
+        # 4. 构建返回的节点列表
         nodes = []
         for node in top_nodes_list:
             nodes.append({
                 "id": str(node),
                 "label": str(node),
+                "size": 35,  # 统一大尺寸
+                "color": {
+                    "background": "#FF7675", # 统一红色
+                    "border": "#2D3436"
+                },
                 "value": self.G.degree[node] 
             })
             
-        # 4. 构建返回的边列表（只保留核心节点之间的连线）
+        # 5. 构建返回的边列表
         edges = []
         for u, v, data in self.G.edges(data=True):
             if u in top_nodes_set and v in top_nodes_set:
@@ -82,11 +85,10 @@ class FrontendKnowledgeGraph:
                     "from": str(u),
                     "to": str(v),
                     "label": str(data.get('relation', '')),
-                    "weight": int(data.get('weight', 0)),
+                    "weight": int(data.get('weight', 1)),
                     "relation": str(data.get('relation', ''))
-                })
-                
-        return {"nodes": nodes, "edges": edges}        
+                })        
+        return {"nodes": nodes, "edges": edges}       
 
     def query_relation(self, entity: str) -> List[Dict]:
         """查询实体相关关系"""

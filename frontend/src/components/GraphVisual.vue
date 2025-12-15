@@ -152,7 +152,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted, watch, defineProps, defineEmits } from 'vue';
+import { ref, onMounted, nextTick, onUnmounted, watch, defineProps, defineEmits, shallowRef, markRaw } from 'vue';
 import { Network, DataSet } from 'vis-network/standalone';
 import { ElButton, ElMessage, ElInput, ElIcon } from 'element-plus';
 import { Fullscreen, Picture, Download, ArrowDown, Loading, ArrowLeft } from '@element-plus/icons-vue';
@@ -207,7 +207,7 @@ const emit = defineEmits(['update:currentEntity', 'graph-loaded', 'getRecommendD
 
 // 响应式数据
 const graphRef = ref(null);
-const network = ref(null); // 图谱实例
+const network = shallowRef(null); // 图谱实例
 const loading = ref(false); // 加载状态
 const searchEntity = ref('');
 const currentEntity = ref('');
@@ -217,7 +217,7 @@ const termsData = ref({ nodes: [], edges: [] }); // 词条数据
 const initRetryCount = ref(0); // 初始化重试计数器
 const isShowingFull = ref(false); // 是否显示全部节点
 const nodeHistory = ref([]); // 节点点击历史记录（用于回溯）
-const MAX_DEFAULT_NODES = 15; // 初始默认显示最大节点数
+const MAX_DEFAULT_NODES =15; // 初始默认显示最大节点数
 const EMPTY_TEXT_PLACEHOLDER = '无文本内容'; // 空文本占位符
 const EMPTY_RELATION_PLACEHOLDER = '无关联'; // 空关系占位符
 
@@ -339,7 +339,7 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
     try {
       if (entity && entity !== EMPTY_TEXT_PLACEHOLDER) {
         // 加载指定实体的数据
-        res = await api.getGraphDataByEntity(encodeURIComponent(entity));
+        res = await api.getGraphDataByEntity(entity);
         isShowingFull.value = forceFull;
       } else if (isFullScreen.value || forceFull) {
         // 全屏模式或强制全屏：加载全量数据
@@ -379,9 +379,6 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
     });
 
     // 6. 生成节点数据
-    const validNodeLabels = new Set();
-    rawEdges.forEach(edge => { validNodeLabels.add(edge.source); validNodeLabels.add(edge.target); });
-
     let validNodes = nodes
       .filter(node => node.id || node.label)
       .map(node => {
@@ -406,22 +403,22 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
           font: { size: isCenter ? 16 : 14, color: '#333', face: 'Arial', strokeWidth: 2, strokeColor: '#fff' },
           color: { 
             background: bgColor, 
-            border: '#000000', // 队友要求保留黑色边框
+            border: '#000000', 
             highlight: { background: bgColor, border: '#000000' }
           },
           borderWidth: 1, // 保留黑色边框
-          shadow: true,   // 保留阴影
+          shadow: false,   // 保留阴影
           physics: true,
           mass: isCenter ? 2 : 1
         };
       })
-      .filter(node => validNodeLabels.has(node.label) && node.label !== EMPTY_TEXT_PLACEHOLDER);
+      .filter(node => node.label !== EMPTY_TEXT_PLACEHOLDER);
 
     // 限制节点数量 (非全屏时)
     if (!entity || entity === EMPTY_TEXT_PLACEHOLDER) {
       if (!isFullScreen.value && !forceFull && !isShowingFull.value) {
         validNodes = validNodes.slice(0, MAX_DEFAULT_NODES);
-        ElMessage.info(`当前显示前${MAX_DEFAULT_NODES}个关键节点，全屏模式下显示全部`);
+        ElMessage.info(`当前显示前12个关键节点，全屏模式下显示全部`);
       }
     }
 
@@ -438,56 +435,73 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
           from: nodeLabelMap.get(edge.source),
           to: nodeLabelMap.get(edge.target),
           label: edge.relation,
-          width: Math.min(1.5 + (edge.weight || 0) / 5, 4), // 综合了队友的权重逻辑
+          width: Math.min(1.5 + (edge.weight || 0) / 5, 4), // 综合了权重逻辑
           color: { color: edgeColor, highlight: edgeColor, hover: edgeColor, inherit: false, opacity: 0.8 },
           arrows: { to: { enabled: true, scaleFactor: 0.5 } }
         };
       });
 
-    // 8. 配置项 (关键优化：根据节点数量动态调整排斥力)
+    // 8. 配置项 
     const isLargeGraph = validNodes.length > 100;
     const options = {
       nodes: { 
-        font: { size: 14, face: 'Arial' },
-        shadow: true 
-      },
+        font: { size: 14, face: 'Arial' }, 
+        shape: 'dot', 
+        shadow: isLargeGraph ? false : true,
+        shapeProperties: {
+          interpolation: false 
+        },
+        scaling: {
+          label: {
+            enabled: true,
+            drawThreshold: 8,
+            maxVisible: 20 
+          }
+        }
+      }, 
       edges: { 
         font: { size: 12, align: 'middle', color: '#888' },
-        smooth: { 
-          // 节点少时曲线美观，节点多时直线高效
-          type: isLargeGraph ? 'continuous' : 'dynamic', 
+        // 大图强制直线
+        smooth: isLargeGraph ? false : { 
+          type: 'dynamic', 
           roundness: 0.5 
         }
       },
       physics: {
         enabled: true,
-        solver: 'barnesHut', // 性能核心
+        solver: 'barnesHut',
         barnesHut: {
-          // 动态排斥力：少时温柔(-2000)，多时强力(-30000)
           gravitationalConstant: isLargeGraph ? -30000 : -2000, 
-          centralGravity: isLargeGraph ? 0.5 : 0.3,
-          springLength: isLargeGraph ? 120 : 180,
+          centralGravity: 0.3,
+          springLength: isLargeGraph ? 95 : 180,
           springConstant: 0.04,
           damping: 0.09,
-          avoidOverlap: isLargeGraph ? 0.1 : 0 
+          avoidOverlap: 0 
         },
+        adaptiveTimestep: false, 
+        timestep: 0.5, 
+        minVelocity: 0.75, 
         stabilization: {
           enabled: true,
-          iterations: 1000,
+          iterations: 500, 
           updateInterval: 50,
           onlyDynamicEdges: false,
           fit: true
         }
       },
+      
       interaction: { 
         hover: true, 
         tooltipDelay: 200, 
-        hideEdgesOnDrag: isLargeGraph, // 大图拖拽隐藏边
+        hoverConnectedEdges: !isLargeGraph, 
+        hideEdgesOnDrag: isLargeGraph, 
         selectable: true,
-        zoomView: true 
+        zoomView: true,
+        zoomSpeed: 0.5 
       },
+      
       layout: { 
-        improvedLayout: !isLargeGraph // 大图关闭预布局
+        improvedLayout: !isLargeGraph 
       }
     };
 
@@ -522,27 +536,18 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
             ElMessage.info('该节点无文本内容');
             return;
           }
-          
-          // 检查是否有下属内容
-          const hasSub = validEdges.some(edge => edge.from === node.id);
-          // 即使没有下属内容，也通知父组件（为了推荐数据）
+          // 更新当前选中的实体状态
           searchEntity.value = node.label;
-          currentEntity.value = node.label; // 更新当前实体，确保词条视图同步
-          
-          // 记录历史
+          currentEntity.value = node.label;
+          //  记录历史 (用于回溯功能)
           if (nodeHistory.value[nodeHistory.value.length - 1] !== node.label) {
             nodeHistory.value.push(node.label);
           }
-
+          //  通知父组件更新推荐
           emit('update:currentEntity', node.label);
-          emit('getRecommendData', node.label); // 推荐请求
-
-          if (hasSub) {
-             // 如果有子节点，重新绘图
-             initGraph(node.label);
-          } else {
-             ElMessage.info(`「${node.label}」无下属节点，已显示相关推荐`);
-          }
+          emit('getRecommendData', node.label); 
+          // 直接调用 initGraph
+          initGraph(node.label);
         }
       }
     });

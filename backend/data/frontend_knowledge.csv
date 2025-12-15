@@ -1,4 +1,36 @@
 source,relation,target,weight
+HTML,关联,CSS,5
+HTML,关联,JavaScript,5
+CSS,关联,HTML,5
+CSS,关联,JavaScript,5
+JavaScript,关联,HTML,5
+JavaScript,关联,CSS,5
+Vue,基于,JavaScript,5
+React,基于,JavaScript,5
+TypeScript,超集,JavaScript,5
+Vue,适配,TypeScript,4
+React,适配,TypeScript,4
+Vue,依赖,HTML,3
+React,依赖,HTML,3
+前端工程化,包含,Webpack,4
+前端工程化,包含,Vite,4
+Vite,服务于,Vue,4
+Vite,服务于,React,4
+Webpack,服务于,Vue,4
+Webpack,服务于,React,4
+前端开发,核心组成,HTML,5
+前端开发,核心组成,CSS,5
+前端开发,核心组成,JavaScript,5
+前端开发,工程化,前端工程化,4
+HTML,依赖样式,CSS,3
+HTML,依赖脚本,JavaScript,3
+JavaScript,操作对象,HTML,4
+JavaScript,修改样式,CSS,3
+CSS,增强工具,JavaScript,2
+Vue,基于,JavaScript,5
+React,基于,JavaScript,5
+Vue,模板语言,HTML,4
+React,JSX语法,HTML,3
 HTML,核心版本,HTML4,1
 HTML,核心版本,HTML5,5
 HTML5,核心特性,语义化标签,5
@@ -266,7 +298,6 @@ JavaScript,错误处理,全局捕获,3
 JavaScript,错误处理,同步捕获,4
 JavaScript,错误处理,异步捕获,4
 JavaScript,错误处理,抛出,4
-JavaScript,错误类型,"SyntaxError, TypeError, ReferenceError...",4
 JavaScript,核心调度机制,事件循环,5
 事件循环,核心组成,调用栈,4
 事件循环,核心组成,Web APIs,4
