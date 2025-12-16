@@ -32,7 +32,7 @@
           </el-card>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="历史推荐" name="history">
+      <el-tab-pane label="搜索历史" name="history">
         <div class="recommend-content history-content">
           <el-empty v-if="!historyRecommendations.length" description="暂无历史记录"></el-empty>
           <el-card v-else class="recommend-card" v-for="(item, index) in historyRecommendations" :key="'history-' + index">

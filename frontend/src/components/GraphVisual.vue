@@ -178,7 +178,7 @@ const getRelationColor = (relation) => {
   // 【蓝色系】核心结构、定义、标准、顶层分类 
   if (['核心', '组成', '环节', '领域', '标准', '组织', '定义', '概念', '维度', '进阶', '方案', '优势'].some(k => rel.includes(k))) return '#409EFF';
 
-  return '#909399';
+  return '#FFC100';
 };
 
 // 生成百度百科链接
@@ -217,7 +217,7 @@ const termsData = ref({ nodes: [], edges: [] }); // 词条数据
 const initRetryCount = ref(0); // 初始化重试计数器
 const isShowingFull = ref(false); // 是否显示全部节点
 const nodeHistory = ref([]); // 节点点击历史记录（用于回溯）
-const MAX_DEFAULT_NODES =15; // 初始默认显示最大节点数
+const MAX_DEFAULT_NODES = 15; // 初始默认显示最大节点数
 const EMPTY_TEXT_PLACEHOLDER = '无文本内容'; // 空文本占位符
 const EMPTY_RELATION_PLACEHOLDER = '无关联'; // 空关系占位符
 
@@ -255,9 +255,10 @@ const hasSubordinateContent = (entity, edges) => {
   return edges.some(edge => edge.source === entity);
 };
 
-// 回溯到上一个节点
+// 回溯到上一个节点（支持回溯到初始状态）
 const backToPreviousNode = () => {
   if (nodeHistory.value.length <= 1) return;
+  // 移除当前节点，获取上一个节点
   nodeHistory.value.pop();
   const prevEntity = nodeHistory.value[nodeHistory.value.length - 1];
   
@@ -374,42 +375,47 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
     // 5. 颜色映射表 (目标节点跟随边染色)
     const nodeColorMap = new Map();
     rawEdges.forEach(edge => {
-      const color = getRelationColor(edge.relation);
-      if (edge.target !== entity) nodeColorMap.set(edge.target, color);
+      if (!nodeColorMap.has(edge.target)) {
+        nodeColorMap.set(edge.target, getRelationColor(edge.relation));
+      }
     });
 
     // 6. 生成节点数据
-    let validNodes = nodes
-      .filter(node => node.id || node.label)
-      .map(node => {
-        const label = formatEmptyText(node.label || node.id);
-        const isCenter = label === entity;
-        let bgColor, borderColor, textColor;
+    const allNodeLabels = new Set();
+    rawEdges.forEach(edge => {
+      allNodeLabels.add(edge.source);
+      allNodeLabels.add(edge.target);
+    });
 
-        // 颜色决策：中心绿，关联跟随边，其他蓝
-        if (isCenter) {
-          bgColor = '#67C23A'; borderColor = '#529B2E'; textColor = '#FFFFFF';
-        } else if (nodeColorMap.has(label)) {
-          bgColor = nodeColorMap.get(label); borderColor = bgColor; textColor = '#FFFFFF';
-        } else {
-          bgColor = '#409EFF'; borderColor = '#1989FA'; textColor = '#FFFFFF';
-        }
+    // 检查每个节点是否有下属节点
+    const nodeHasSubordinates = new Map();
+    Array.from(allNodeLabels).forEach(label => {
+      nodeHasSubordinates.set(label, rawEdges.some(edge => edge.source === label));
+    });
 
+    let validNodes = Array.from(allNodeLabels)
+      .map(label => {
+        // 确定节点颜色：有下属节点使用映射颜色，否则使用灰色
+        const hasSubordinates = nodeHasSubordinates.get(label);
+        const baseColor = hasSubordinates ? 
+          (nodeColorMap.get(label) || '#409EFF') : '#CCCCCC';
+        
         return {
-          id: node.id || label,
+          id: label,
           label: label,
-          shape: 'dot', // 使用 dot 形状，配合 size 参数
-          size: isCenter ? 35 : 20,
-          font: { size: isCenter ? 16 : 14, color: '#333', face: 'Arial', strokeWidth: 2, strokeColor: '#fff' },
-          color: { 
-            background: bgColor, 
-            border: '#000000', 
-            highlight: { background: bgColor, border: '#000000' }
+          color: {
+            background: baseColor,
+            border: hasSubordinates ? shadeColor(baseColor, -30) : '#AAAAAA',
+            highlight: hasSubordinates ? shadeColor(baseColor, -20) : '#BBBBBB'
           },
-          borderWidth: 1, // 保留黑色边框
-          shadow: false,   // 保留阴影
-          physics: true,
-          mass: isCenter ? 2 : 1
+          shape: 'box', // 改为box形状使文字显示在内部
+          size: Math.max(label.length * 8, 30), // 根据文字长度动态调整大小
+          font: { 
+            color: getContrastColor(baseColor), // 确保文字与背景颜色对比明显
+            size: 14,
+            face: 'Arial'
+          },
+          hasSubordinates: hasSubordinates // 记录是否有下属节点
         };
       })
       .filter(node => node.label !== EMPTY_TEXT_PLACEHOLDER);
@@ -422,7 +428,14 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
       }
     }
 
-    if (validNodes.length === 0) validNodes.push({ id: `node_empty`, label: entity, shape: 'dot', size: 30, color: { background: '#67C23A', border: '#529B2E' } });
+    if (validNodes.length === 0) validNodes.push({ 
+      id: `node_empty`, 
+      label: entity, 
+      shape: 'box', 
+      size: 30, 
+      color: { background: '#67C23A', border: '#529B2E' },
+      hasSubordinates: false
+    });
 
     const nodeLabelMap = new Map(validNodes.map(n => [n.label, n.id]));
 
@@ -441,12 +454,12 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
         };
       });
 
-    // 8. 配置项 
+    // 8. 配置项 - 优化物理引擎
     const isLargeGraph = validNodes.length > 100;
     const options = {
       nodes: { 
         font: { size: 14, face: 'Arial' }, 
-        shape: 'dot', 
+        shape: 'box', // 统一设置为box形状
         shadow: isLargeGraph ? false : true,
         shapeProperties: {
           interpolation: false 
@@ -471,19 +484,19 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
         enabled: true,
         solver: 'barnesHut',
         barnesHut: {
-          gravitationalConstant: isLargeGraph ? -30000 : -2000, 
+          gravitationalConstant: isLargeGraph ? -30000 : -2500, // 调整引力
           centralGravity: 0.3,
-          springLength: isLargeGraph ? 95 : 180,
-          springConstant: 0.04,
-          damping: 0.09,
-          avoidOverlap: 0 
+          springLength: isLargeGraph ? 120 : 200, // 增加弹簧长度使布局更宽松
+          springConstant: 0.05, // 增加弹簧强度
+          damping: 0.15, // 增加阻尼使系统更快稳定
+          avoidOverlap: 0.5 // 增加避免重叠的力度
         },
-        adaptiveTimestep: false, 
-        timestep: 0.5, 
+        adaptiveTimestep: true, // 启用自适应时间步长
+        timestep: 0.4, 
         minVelocity: 0.75, 
         stabilization: {
           enabled: true,
-          iterations: 500, 
+          iterations: 1000, // 增加迭代次数使布局更稳定
           updateInterval: 50,
           onlyDynamicEdges: false,
           fit: true
@@ -509,6 +522,7 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
     graphRef.value.style.visibility = 'visible';
     graphRef.value.style.opacity = '1';
       
+
     network.value = new Network(
       graphRef.value, 
       { nodes: new DataSet(validNodes), edges: new DataSet(validEdges) }, 
@@ -530,25 +544,34 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
         const nodeId = params.nodes[0];
         const node = validNodes.find(n => n.id === nodeId);
         
-        // 简单交互：点击即选中
-        if (node) {
-          if (node.label === EMPTY_TEXT_PLACEHOLDER) {
-            ElMessage.info('该节点无文本内容');
-            return;
+        // 无下属节点则不响应点击
+        if (!node || !node.hasSubordinates) {
+          if (node && !node.hasSubordinates) {
+            ElMessage.info('该节点无下属关联内容');
           }
-          // 更新当前选中的实体状态
-          searchEntity.value = node.label;
-          currentEntity.value = node.label;
-          //  记录历史 (用于回溯功能)
-          if (nodeHistory.value[nodeHistory.value.length - 1] !== node.label) {
-            nodeHistory.value.push(node.label);
-          }
-          //  通知父组件更新推荐
-          emit('update:currentEntity', node.label);
-          emit('getRecommendData', node.label); 
-          // 直接调用 initGraph
-          initGraph(node.label);
+          return;
         }
+        
+        if (node.label === EMPTY_TEXT_PLACEHOLDER) {
+          ElMessage.info('该节点无文本内容');
+          return;
+        }
+        
+        // 更新当前选中的实体状态
+        searchEntity.value = node.label;
+        currentEntity.value = node.label;
+        
+        // 记录历史 (用于回溯功能，确保初始状态被保留)
+        if (nodeHistory.value[nodeHistory.value.length - 1] !== node.label) {
+          nodeHistory.value.push(node.label);
+        }
+        
+        // 通知父组件更新推荐
+        emit('update:currentEntity', node.label);
+        emit('getRecommendData', node.label); 
+        
+        // 直接调用 initGraph
+        initGraph(node.label);
       }
     });
 
@@ -558,6 +581,45 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
     loading.value = false;
     destroyNetwork();
   }
+};
+
+// 辅助函数：调整颜色明暗度
+const shadeColor = (color, percent) => {
+  let R = parseInt(color.substring(1, 3), 16);
+  let G = parseInt(color.substring(3, 5), 16);
+  let B = parseInt(color.substring(5, 7), 16);
+
+  R = parseInt(R * (100 + percent) / 100);
+  G = parseInt(G * (100 + percent) / 100);
+  B = parseInt(B * (100 + percent) / 100);
+
+  R = (R < 255) ? R : 255;
+  G = (G < 255) ? G : 255;
+  B = (B < 255) ? B : 255;
+
+  R = Math.round(R);
+  G = Math.round(G);
+  B = Math.round(B);
+
+  const RR = ((R.toString(16).length === 1) ? "0" + R.toString(16) : R.toString(16));
+  const GG = ((G.toString(16).length === 1) ? "0" + G.toString(16) : G.toString(16));
+  const BB = ((B.toString(16).length === 1) ? "0" + B.toString(16) : B.toString(16));
+
+  return "#" + RR + GG + BB;
+};
+
+// 辅助函数：根据背景色获取对比度高的文字颜色
+const getContrastColor = (color) => {
+  // 解析RGB值
+  const R = parseInt(color.substring(1, 3), 16);
+  const G = parseInt(color.substring(3, 5), 16);
+  const B = parseInt(color.substring(5, 7), 16);
+  
+  // 计算亮度
+  const luminance = (0.299 * R + 0.587 * G + 0.114 * B) / 255;
+  
+  // 亮度大于0.5使用黑色，否则使用白色
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
 };
 
 // 加载词条数据 
@@ -615,6 +677,7 @@ const handleTermClick = (entity) => {
     emit('getRecommendData', entity);
     return;
   }
+  // 记录历史 (确保初始状态被保留)
   if (nodeHistory.value[nodeHistory.value.length - 1] !== entity) {
     nodeHistory.value.push(entity);
   }
@@ -630,13 +693,14 @@ const handleTermClick = (entity) => {
   }
 };
 
-// 显示核心节点
+// 显示核心节点（初始化历史记录为初始状态）
 const showAllGraph = () => {
   searchEntity.value = '';
   currentEntity.value = '';
   emit('update:currentEntity', '');
   emit('getRecommendData', '');
-  nodeHistory.value = [];
+  // 初始状态用空字符串标识，作为历史记录的第一个元素
+  nodeHistory.value = [''];
   
   if (viewMode.value === 'graph') {
     initGraph('', false);
@@ -693,6 +757,7 @@ const handleFullScreenChange = () => {
 const toggleFullScreen = async () => {
   const container = document.querySelector('.graph-container');
   if (!container) return;
+
   try {
     if (!isFullScreen.value) {
       if (viewMode.value === 'graph') await initGraph(currentEntity.value || '', true);
@@ -713,13 +778,49 @@ const toggleFullScreen = async () => {
   }
 };
 
-// 监听父组件实体变化
+// 处理搜索输入回车事件
+const handleInputKeyup = (e) => {
+  if (e.key === 'Enter') {
+    handleSearch();
+  }
+};
+
+// 处理搜索
+const handleSearch = () => {
+  const entity = formatEmptyText(searchEntity.value.trim());
+  if (!entity || entity === EMPTY_TEXT_PLACEHOLDER) {
+    showAllGraph();
+    return;
+  }
+  
+  // 记录历史（确保初始状态被保留）
+  if (nodeHistory.value[nodeHistory.value.length - 1] !== entity) {
+    nodeHistory.value.push(entity);
+  }
+  
+  currentEntity.value = entity;
+  emit('update:currentEntity', entity);
+  emit('getRecommendData', entity);
+  
+  if (viewMode.value === 'graph') {
+    initGraph(entity);
+  } else {
+    loadTermsData(entity);
+  }
+};
+
+// 监听父组件实体变化（初始化历史记录）
 watch(
   () => props.mainEntity,
   (newEntity) => {
     if (newEntity && newEntity.trim() && currentEntity.value !== newEntity.trim()) {
       const entity = formatEmptyText(newEntity.trim());
-      if (nodeHistory.value[nodeHistory.value.length - 1] !== entity) nodeHistory.value.push(entity);
+      // 初始时如果历史为空，添加初始实体到历史（作为初始状态）
+      if (nodeHistory.value.length === 0) {
+        nodeHistory.value.push(entity);
+      } else if (nodeHistory.value[nodeHistory.value.length - 1] !== entity) {
+        nodeHistory.value.push(entity);
+      }
       currentEntity.value = entity;
       viewMode.value === 'graph' ? initGraph(entity) : loadTermsData(entity);
     }
@@ -730,7 +831,18 @@ watch(
 // 生命周期
 onMounted(async () => {
   await nextTick();
-  setTimeout(() => { viewMode.value === 'graph' ? initGraph(props.mainEntity) : loadTermsData(props.mainEntity); }, 500);
+  setTimeout(() => { 
+    viewMode.value === 'graph' ? initGraph(props.mainEntity) : loadTermsData(props.mainEntity); 
+    // 初始化历史记录：如果父组件有初始实体，添加到历史；否则添加空字符串（显示全部）
+    if (props.mainEntity && props.mainEntity.trim()) {
+      const entity = formatEmptyText(props.mainEntity.trim());
+      if (nodeHistory.value.length === 0) {
+        nodeHistory.value.push(entity);
+      }
+    } else if (nodeHistory.value.length === 0) {
+      nodeHistory.value.push('');
+    }
+  }, 500);
   window.addEventListener('resize', () => { network.value?.redraw(); });
   document.addEventListener('fullscreenchange', handleFullScreenChange);
   document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
