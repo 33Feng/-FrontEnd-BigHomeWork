@@ -184,7 +184,7 @@ const openSearch = (keyword, type) => {
     // searchUrl = `https://w3schools.org.cn/search/default.asp?p=${encodeURIComponent(keyword)}`;
     searchUrl = `https://www.w3ccoo.com/?s=${encodeURIComponent(keyword)}`;
   } else {
-    searchUrl = `https://www.baidu.com/s?wd=${encodeURIComponent(keyword)}`;
+    searchUrl = `https://developer.mozilla.org/zh-CN/docs/Web/${encodeURIComponent(keyword)}`;
   }
   window.open(searchUrl, '_blank');
 };
