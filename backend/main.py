@@ -114,6 +114,18 @@ def get_learning_path(entity: str):
         # 返回一个空结构避免前端崩
         return {"code": 500, "msg": str(e), "data": None}
 # 模糊搜索实体接口
+# 关联推荐专用接口
+@app.get("/api/recommendations/{entity}")
+def get_recommendations(entity: str):
+    """获取基于图谱的快速推荐"""
+    try:
+        if not entity:
+            return {"code": 400, "msg": "实体不能为空"}
+        recs = kg.get_simple_recommendations(entity)
+        return {"code": 200, "data": recs, "msg": "success"}
+    except Exception as e:
+        print(f"推荐获取失败: {e}")
+        return {"code": 500, "msg": str(e), "data": []}
 @app.get("/api/graph-data/entity/fuzzy/{keyword}")
 def fuzzy_search_entity(keyword: str):
     """根据关键词模糊匹配实体"""
