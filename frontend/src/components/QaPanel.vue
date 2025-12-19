@@ -189,7 +189,7 @@ const submitQuestion = async () => {
 
   isLoading.value = true;
   try {
-    // 修正：根据模式设置超时时间，与前端显示一致
+    // 根据模式设置超时时间，与前端显示一致
     const requestTimeout = answerMode.value === 'quick' ? 7000 : 120000;
     // 调用 DeepSeek API（修正参数传递和超时配置）
     const res = await api.qa(
@@ -206,7 +206,7 @@ const submitQuestion = async () => {
       }
     );
 
-    // 修正：兼容 DeepSeek 响应格式，提取核心数据（根据实际响应调整，此处保留原有解析逻辑并增强容错）
+    // 兼容 DeepSeek 响应格式，提取核心数据（根据实际响应调整，此处保留原有解析逻辑并增强容错）
     const responseData = res.data || res;
     answer.value = responseData.answer || responseData.content || '';
     recommendations.value = responseData.recommendations || responseData.suggestions || [];
@@ -214,7 +214,7 @@ const submitQuestion = async () => {
     emit('update:mainEntity', mainEntity.value);
 
   } catch (error) {
-    // 修正：细化 DeepSeek 常见错误处理
+    // 细化 DeepSeek 常见错误处理
     let errorMsg = '';
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
       errorMsg = `${answerMode.value === 'quick' ? '快速回答超时' : '深度思考超时'}，请稍后重试`;
@@ -231,7 +231,7 @@ const submitQuestion = async () => {
     }
     ElMessage.error(errorMsg);
 
-    // 保留原有逻辑：错误时显示默认内容，保证页面不空白
+    // 错误时显示默认内容，保证页面不空白
     answer.value = `<p>抱歉，暂时无法为你提供回答，请稍后重试。</p>`;
     recommendations.value = [
       { label: 'Vue3', desc: '渐进式JavaScript框架，支持Composition API', weight: 5 },
@@ -246,7 +246,7 @@ const submitQuestion = async () => {
   }
 };
 
-// 重置表单（保留原有逻辑）
+// 重置表单
 const resetForm = () => {
   question.value = '';
   answer.value = '';
@@ -255,7 +255,7 @@ const resetForm = () => {
   emit('update:mainEntity', '');
 };
 
-// 快速提问（保留原有逻辑）
+// 快速提问
 const quickAsk = () => {
   if (props.currentEntity) {
     question.value = `${props.currentEntity}相关知识有哪些？`;
@@ -263,7 +263,7 @@ const quickAsk = () => {
   }
 };
 
-// 监听当前实体变化（保留原有逻辑）
+// 监听当前实体变化
 watch(
   () => props.currentEntity,
   (newEntity) => {
@@ -283,7 +283,7 @@ watch(
   padding: 0;
 }
 
-/* 搜索容器和历史下拉样式（保留原有） */
+/* 搜索容器和历史下拉样式 */
 .search-container {
   position: relative;
   width: 100%;
@@ -344,7 +344,7 @@ watch(
   background-color: #f5f7fa;
 }
 
-/* 回答容器样式（保留原有） */
+/* 回答容器样式*/
 .answer-container {
   margin-top: 15px;
   width: 100%;
@@ -360,7 +360,7 @@ watch(
   word-break: break-all;
 }
 
-/* 滚动条样式优化（保留原有） */
+/* 滚动条样式优化 */
 .answer-text::-webkit-scrollbar {
   width: 6px;
 }
@@ -379,7 +379,7 @@ watch(
   background: #a8a8a8;
 }
 
-/* 推荐面板容器（保留原有） */
+/* 推荐面板容器*/
 .recommend-wrapper {
   width: 100%;
   box-sizing: border-box;
@@ -442,7 +442,7 @@ watch(
   border-radius: 4px;
 }
 
-/* 响应式调整（保留原有） */
+/* 响应式调整*/
 @media (max-width: 768px) {
   .answer-text {
     max-height: 300px;

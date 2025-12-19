@@ -276,7 +276,7 @@ watch(() => props.currentEntity, (newVal) => {
   border-radius: 4px;
 }
 
-/* --- 1. 🚀 准备规划状态 --- */
+/* 1.准备规划状态 */
 .start-plan-box {
   display: flex;
   flex-direction: column;
@@ -314,7 +314,7 @@ watch(() => props.currentEntity, (newVal) => {
   font-size: 14px;
 }
 
-/* --- 2. ⏳ 加载中状态 --- */
+/* 加载中状态*/
 .loading-box {
   display: flex;
   flex-direction: column;
