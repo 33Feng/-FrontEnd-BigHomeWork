@@ -214,6 +214,83 @@ class FrontendKnowledgeGraph:
             "related_entities": entities,
             "recommendations": recommendations
         }
+    def get_learning_path(self, entity: str) -> Dict:
+        """
+        利用 LLM 生成智能学习路径
+        """
+        if not self.deepseek_api_key or not entity:
+            return None
+
+        #  获取上下文：当前实体的邻居节点（作为参考）
+        neighbors = list(self.G.successors(entity)) + list(self.G.predecessors(entity))
+        # 限制数量防止 token 溢出
+        neighbors_str = ", ".join([str(n) for n in neighbors[:20]])
+
+        #构建 Prompt：要求返回严格的 JSON 格式
+        prompt = f"""
+        你是一位计算机科学教育专家。用户当前正在学习前端技术知识点：「{entity}」。
+        图谱中与它相关的概念有：{neighbors_str}。
+
+        请结合这些相关概念和你的专业知识，为用户规划一条科学的学习路径。
+        
+        【重要】请严格按照以下 JSON 格式直接返回数据，不要包含 Markdown 标记（如 ```json ... ```）：
+        {{
+            "prerequisites": [
+                {{"name": "前置知识点1", "desc": "学习 {entity} 之前必须掌握的基础，简述原因"}}
+            ],
+            "core": {{
+                "name": "{entity}",
+                "desc": "当前知识点的核心学习重点"
+            }},
+            "next_steps": [
+                {{"name": "进阶知识点1", "desc": "学完 {entity} 后推荐学习的高级内容，简述原因"}}
+            ]
+        }}
+        """
+
+        # 调用 DeepSeek
+        try:
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.deepseek_api_key}"
+            }
+            data = {
+                "model": "deepseek-chat",
+                "messages": [
+                    {"role": "system", "content": "你是一个严谨的教育规划助手，只输出 JSON 数据。"},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.3, # 降低温度保证格式稳定
+                "response_format": { "type": "json_object" } # 强制 JSON 模式 (如果 DeepSeek 支持)
+            }
+            
+            response = requests.post(
+                self.deepseek_api_url,
+                headers=headers,
+                json=data,
+                timeout=60
+            )
+            response.raise_for_status()
+            
+            content = response.json()["choices"][0]["message"]["content"]
+            
+            # 清理一下可能存在的 Markdown 标记
+            import re
+            import json
+            content = re.sub(r'^```json\s*', '', content)
+            content = re.sub(r'^```\s*', '', content)
+            content = re.sub(r'\s*```$', '', content)
+            
+            return json.loads(content)
+
+        except Exception as e:
+            print(f"学习路径生成失败: {e}")
+            # 失败时的兜底数据
+            return {
+                "prerequisites": [{"name": "HTML/CSS/JS", "desc": "前端基础三件套"}],
+                "core": {"name": entity, "desc": "当前选中知识点"},
+                "next_steps": [{"name": "Vue/React", "desc": "现代前端框架"}]
+            }
 
     def get_graph_data(self) -> Dict:
         """获取全部图谱可视化数据（用于全屏模式）"""

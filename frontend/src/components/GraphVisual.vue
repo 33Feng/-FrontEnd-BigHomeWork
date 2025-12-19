@@ -30,7 +30,7 @@
 
         <!-- 全屏按钮 -->
         <el-button plain @click="toggleFullScreen">
-          <el-icon class="el-icon--left"><Fullscreen /></el-icon>
+          <el-icon class="el-icon--left"><FullScreen /></el-icon>
           全屏模式
         </el-button>
       </div>
@@ -152,10 +152,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted, watch, defineProps, defineEmits, shallowRef, markRaw } from 'vue';
+import { ref, onMounted, nextTick, onUnmounted, watch,  shallowRef, markRaw } from 'vue';
 import { Network, DataSet } from 'vis-network/standalone';
 import { ElButton, ElMessage, ElInput, ElIcon } from 'element-plus';
-import { Fullscreen, Picture, Download, ArrowDown, Loading, ArrowLeft } from '@element-plus/icons-vue';
+import { FullScreen, Picture, Download, ArrowDown, Loading, ArrowLeft } from '@element-plus/icons-vue';
 import { api } from '../api/index';
 
 // --- 1. 智能颜色映射 (模糊匹配) ---

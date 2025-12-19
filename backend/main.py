@@ -29,7 +29,7 @@ class QuestionRequest(BaseModel):
 
 # API接口
 @app.get("/api/graph-data")
-async def get_graph_data(limit: int = 60):
+def get_graph_data(limit: int = 60):
     """获取初始核心图谱数据（只返回Top N节点）"""
     if not kg:
         raise HTTPException(status_code=500, detail="图谱未初始化，请检查后端日志")
@@ -42,7 +42,7 @@ async def get_graph_data(limit: int = 60):
 
 # 问答接口
 @app.post("/api/qa")
-async def qa(request: QuestionRequest):
+def qa(request: QuestionRequest):
     """问答接口"""
     try:
         result = kg.answer_question(request.question, request.mode)
@@ -51,14 +51,14 @@ async def qa(request: QuestionRequest):
         raise HTTPException(status_code=500, detail=f"问答处理失败：{str(e)}")
 
 @app.get("/api/graph-data/full")
-async def get_full_graph_data():
+def get_full_graph_data():
     try:
         return {"code": 200, "data": kg.get_graph_data(), "msg": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取全量数据失败：{str(e)}")
 
 @app.get("/api/entities")
-async def get_entities():
+def get_entities():
     """获取所有实体列表"""
     try:
         entities = list(kg.G.nodes)
@@ -68,7 +68,7 @@ async def get_entities():
 
 # 按实体筛选图谱数据
 @app.get("/api/graph-data/entity/{entity}")
-async def get_graph_data_by_entity(entity: str):
+def get_graph_data_by_entity(entity: str):
     """根据实体获取相关的图谱数据"""
     try:
         # 过滤非法实体名称
@@ -100,9 +100,22 @@ async def get_graph_data_by_entity(entity: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取实体图谱数据失败：{str(e)}")
 
+@app.get("/api/learning-path/{entity}")
+def get_learning_path(entity: str):
+    """获取智能学习路径规划"""
+    try:
+        if not entity:
+            return {"code": 400, "msg": "实体不能为空"}
+            
+        path_data = kg.get_learning_path(entity)
+        return {"code": 200, "data": path_data, "msg": "success"}
+    except Exception as e:
+        print(f"获取学习路径失败: {e}")
+        # 返回一个空结构避免前端崩
+        return {"code": 500, "msg": str(e), "data": None}
 # 模糊搜索实体接口
 @app.get("/api/graph-data/entity/fuzzy/{keyword}")
-async def fuzzy_search_entity(keyword: str):
+def fuzzy_search_entity(keyword: str):
     """根据关键词模糊匹配实体"""
     try:
         if not keyword:

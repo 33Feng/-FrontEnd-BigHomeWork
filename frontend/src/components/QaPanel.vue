@@ -83,6 +83,7 @@
       <RecommendPanel 
         :recommendations="recommendations" 
         :history-recommendations="searchHistory"
+        :current-entity="currentEntity"
         @delete-history="deleteHistoryItem"
       />
     </div>

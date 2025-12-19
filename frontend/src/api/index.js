@@ -58,6 +58,7 @@ export const api = {
   qa(data, config = {}) {
     return service.post('/qa', data, config);
   },
+  getLearningPath: (entity) => service.get(`/learning-path/${encodeURIComponent(entity)}`),
   // 获取所有实体
   getEntities() {
     return service.get('/entities');
