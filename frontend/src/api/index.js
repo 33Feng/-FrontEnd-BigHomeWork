@@ -59,6 +59,8 @@ export const api = {
     return service.post('/qa', data, config);
   },
   getLearningPath: (entity) => service.get(`/learning-path/${encodeURIComponent(entity)}`),
+  //关联推荐
+  getRecommendations: (entity) => service.get(`/recommendations/${encodeURIComponent(entity)}`),
   // 获取所有实体
   getEntities() {
     return service.get('/entities');

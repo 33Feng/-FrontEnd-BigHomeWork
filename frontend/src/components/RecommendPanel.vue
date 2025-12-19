@@ -27,12 +27,7 @@
     <div class="panel-body">
       
       <div v-if="activeTab === 'path'" class="path-view">
-        
-        <el-empty 
-          v-if="!currentEntity" 
-          description="请在左侧图谱点击一个节点" 
-          :image-size="80"
-        ></el-empty>
+        <el-empty v-if="!currentEntity" description="请在左侧图谱点击一个节点" :image-size="80"></el-empty>
         
         <div v-else-if="!learningPath && !loadingPath" class="start-plan-box">
           <div class="plan-icon-wrapper">
@@ -118,10 +113,10 @@
         </div>
       </div>
 
-      <div v-else-if="activeTab === 'related'" class="list-view">
-        <el-empty v-if="!recommendations.length" description="暂无关联数据" :image-size="60"></el-empty>
+      <div v-else-if="activeTab === 'related'" class="list-view" v-loading="loadingRecs">
+        <el-empty v-if="!localRecommendations.length" description="暂无关联数据" :image-size="60"></el-empty>
         <div v-else class="list-container">
-          <div v-for="(item, index) in recommendations" :key="'rel'+index" class="list-item">
+          <div v-for="(item, index) in localRecommendations" :key="'rel'+index" class="list-item">
             <div class="list-icon bg-blue"><el-icon><Connection /></el-icon></div>
             <div class="list-info">
               <div class="list-top">
@@ -130,7 +125,7 @@
                 </span>
                 <el-rate :model-value="Number(item.weight)" disabled size="small" :max="5"></el-rate>
               </div>
-              <div class="list-desc">{{ item.reason || item.desc }}</div>
+              <div class="list-desc">{{ item.desc }}</div>
             </div>
           </div>
         </div>
@@ -161,15 +156,20 @@ import { ElMessage } from 'element-plus';
 import { Guide, Connection, Time, Search, Right, Delete, MagicStick, Cpu, StarFilled } from '@element-plus/icons-vue';
 
 const props = defineProps({
-  recommendations: { type: Array, default: () => [] },
   historyRecommendations: { type: Array, default: () => [] },
   currentEntity: { type: String, default: '' }
 });
 
 const emit = defineEmits(['delete-history']);
-const activeTab = ref('path');
+const activeTab = ref('path'); // 默认显示路径 Tab
+
+// --- 智能路径相关变量 ---
 const learningPath = ref(null);
 const loadingPath = ref(false);
+
+//关联推荐相关变量
+const localRecommendations = ref([]); 
+const loadingRecs = ref(false);
 
 const handleDeleteHistory = (index) => {
   emit('delete-history', index);
@@ -189,11 +189,11 @@ const openSearch = (keyword, type) => {
   window.open(searchUrl, '_blank');
 };
 
-// 获取路径（手动触发）
+// 获取智能路径（手动触发）
 const fetchLearningPath = async () => {
   if (!props.currentEntity) return;
   loadingPath.value = true;
-  learningPath.value = null; // 清空旧数据
+  learningPath.value = null; 
   
   try {
     const res = await api.getLearningPath(props.currentEntity);
@@ -210,11 +210,33 @@ const fetchLearningPath = async () => {
   }
 };
 
-// 监听实体变化，只重置状态，不自动请求
+// 获取关联推荐 
+const fetchRecommendations = async () => {
+  if (!props.currentEntity) return;
+  loadingRecs.value = true;
+  localRecommendations.value = []; // 先清空旧数据
+  try {
+    // 调用刚才写的新接口
+    const res = await api.getRecommendations(props.currentEntity);
+    if (res.data) {
+      localRecommendations.value = res.data;
+    }
+  } catch (error) {
+    console.error("推荐获取失败", error);
+  } finally {
+    loadingRecs.value = false;
+  }
+}
+
+// 监听实体变化，一变就自动查推荐
 watch(() => props.currentEntity, (newVal) => {
   if (newVal) {
-    learningPath.value = null; 
-    activeTab.value = 'path'; // 自动切回路径 Tab
+    // 1. 路径重置 (等待用户点按钮)
+    learningPath.value = null;
+    activeTab.value = 'path'; 
+    
+    // 2. 关联推荐立即加载 (不用等 AI)
+    fetchRecommendations();
   }
 });
 </script>
@@ -267,7 +289,7 @@ watch(() => props.currentEntity, (newVal) => {
   font-weight: 600;
 }
 
-/* --- 内容滚动区 --- */
+/*内容滚动区*/
 .panel-body {
   flex: 1;
   overflow-y: auto;
@@ -362,7 +384,7 @@ watch(() => props.currentEntity, (newVal) => {
   margin-top: 5px;
 }
 
-/* --- 3. 🗺️ 路径展示样式 --- */
+/* --- 3.路径展示样式 --- */
 .path-title {
   display: flex;
   justify-content: space-between;

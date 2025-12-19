@@ -214,6 +214,25 @@ class FrontendKnowledgeGraph:
             "related_entities": entities,
             "recommendations": recommendations
         }
+    #基于图谱结构的快速推荐
+    def get_simple_recommendations(self, entity: str) -> List[Dict]:
+        if entity not in self.G.nodes:
+            return []
+        # 获取所有关联节点（出边和入边）
+        related_data = self.query_relation(entity)
+        recommendations = []
+        # 按权重降序排序，取前 8 个
+        for item in sorted(related_data, key=lambda x: x['weight'], reverse=True)[:8]:
+            # 确定推荐的目标节点名字
+            target_name = item['target'] if item['source'] == entity else item['source']
+            recommendations.append({
+                "entity": target_name,
+                "desc": f"与【{entity}】存在 {item['relation']} 关系",
+                "weight": int(item['weight']),
+                "reason": item['relation']
+            })
+            
+        return recommendations
     def get_learning_path(self, entity: str) -> Dict:
         """
         利用 LLM 生成智能学习路径
@@ -291,6 +310,7 @@ class FrontendKnowledgeGraph:
                 "core": {"name": entity, "desc": "当前选中知识点"},
                 "next_steps": [{"name": "Vue/React", "desc": "现代前端框架"}]
             }
+    
 
     def get_graph_data(self) -> Dict:
         """获取全部图谱可视化数据（用于全屏模式）"""
