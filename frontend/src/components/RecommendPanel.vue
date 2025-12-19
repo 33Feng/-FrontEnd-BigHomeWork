@@ -71,7 +71,7 @@
                 <div class="card-header">
                   <el-tag type="info" size="small" effect="dark">前置基础</el-tag>
                   <span class="card-title">{{ item.name }}</span>
-                  <el-button link type="info" @click="openSearch(item.name)">
+                  <el-button link type="info" @click="openSearch(item.name, 'pre')">
                     <el-icon><Search /></el-icon>
                   </el-button>
                 </div>
@@ -107,7 +107,7 @@
                 <div class="card-header">
                   <el-tag type="success" size="small" effect="dark">进阶方向</el-tag>
                   <span class="card-title">{{ item.name }}</span>
-                  <el-button link type="success" @click="openSearch(item.name)">
+                  <el-button link type="success" @click="openSearch(item.name, 'next')">
                     <el-icon><Right /></el-icon>
                   </el-button>
                 </div>
@@ -175,8 +175,18 @@ const handleDeleteHistory = (index) => {
   emit('delete-history', index);
 };
 
-const openSearch = (keyword) => {
-  window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(keyword)}`, '_blank');
+const openSearch = (keyword, type) => {
+  // 根据类型选择不同的搜索链接
+  let searchUrl;
+  if (type === 'pre') {
+    searchUrl = `https://developer.mozilla.org/zh-CN/docs/Web/${encodeURIComponent(keyword)}`;
+  } else if (type === 'next') {
+    // searchUrl = `https://w3schools.org.cn/search/default.asp?p=${encodeURIComponent(keyword)}`;
+    searchUrl = `https://www.w3ccoo.com/?s=${encodeURIComponent(keyword)}`;
+  } else {
+    searchUrl = `https://www.baidu.com/s?wd=${encodeURIComponent(keyword)}`;
+  }
+  window.open(searchUrl, '_blank');
 };
 
 // 获取路径（手动触发）
@@ -276,7 +286,7 @@ watch(() => props.currentEntity, (newVal) => {
   border-radius: 4px;
 }
 
-/* --- 1. 🚀 准备规划状态 --- */
+/* 1.准备规划状态 */
 .start-plan-box {
   display: flex;
   flex-direction: column;
@@ -314,7 +324,7 @@ watch(() => props.currentEntity, (newVal) => {
   font-size: 14px;
 }
 
-/* --- 2. ⏳ 加载中状态 --- */
+/* 加载中状态*/
 .loading-box {
   display: flex;
   flex-direction: column;
@@ -366,84 +376,86 @@ watch(() => props.currentEntity, (newVal) => {
 /* 卡片基础 */
 .path-card {
   border: none;
-  border-radius: 8px;
-  position: relative;
 }
 
-.path-card :deep(.el-card__body) {
-  padding: 12px;
+/* 前置卡片 */
+.pre-card {
+  border-left: 3px solid #409EFF;
+  background-color: #f0f7ff;
+}
+
+/* 核心卡片 */
+.core-card {
+  border-left: 3px solid #67C23A;
+  background-color: #f0fff4;
+}
+
+/* 进阶卡片 */
+.next-card {
+  border-left: 3px solid #E6A23C;
+  background-color: #fffbf0;
 }
 
 .card-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .card-title {
   font-weight: bold;
-  font-size: 14px;
   color: #303133;
+  margin: 0 8px;
   flex: 1;
-}
-
-.card-desc {
-  font-size: 12px;
-  color: #666;
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* 卡片分类颜色 */
-/* 前置 - 灰色 */
-.pre-card {
-  background: #f4f4f5;
-  border-left: 3px solid #909399;
-}
-
-/* 核心 - 蓝色 */
-.core-card {
-  background: #ecf5ff;
-  border-left: 3px solid #409EFF;
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15) !important;
-}
-
-/* 进阶 - 绿色 */
-.next-card {
-  background: #f0f9eb;
-  border-left: 3px solid #67C23A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .main-title {
   font-size: 16px;
-  color: #409EFF;
+  color: #27ae60;
+}
+
+.card-desc {
+  margin: 0;
+  font-size: 13px;
+  color: #606266;
+  line-height: 1.6;
 }
 
 .main-desc {
-  color: #555;
+  color: #38b000;
+  font-size: 14px;
 }
 
-/* --- 列表样式 (关联推荐/历史记录) --- */
+/* --- 列表视图样式 (关联推荐/历史记录) --- */
+.list-view {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 .list-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .list-item {
   display: flex;
   align-items: center;
-  padding: 10px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  gap: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
   transition: all 0.2s;
 }
 
 .list-item:hover {
-  background: #ecf5ff;
+  border-color: #e0e7ff;
+  background-color: #f9fafc;
 }
 
 .list-icon {
@@ -453,21 +465,21 @@ watch(() => props.currentEntity, (newVal) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
+  margin-right: 12px;
+  color: white;
 }
 
 .bg-blue {
-  background: #a0cfff;
+  background-color: #409EFF;
 }
 
 .bg-gray {
-  background: #dcdfe6;
+  background-color: #909399;
 }
 
 .list-info {
   flex: 1;
-  overflow: hidden;
+  min-width: 0;
 }
 
 .list-top {
