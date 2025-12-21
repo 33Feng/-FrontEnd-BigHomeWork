@@ -2,7 +2,7 @@
   <div class="graph-wrapper" style="width: 100%; height: 100%; position: relative;">
     <!-- 顶部导航栏：标题 + 右侧功能按钮（含视图切换） -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-      <h3 style="margin: 0; color: #333;">知识图谱可视化</h3>
+      <h3 style="margin: 0; color: #333;">图谱词条可切换</h3>
       <!-- 右侧功能按钮组：视图切换 + 导出 + 全屏 -->
       <div style="display: flex; gap: 10px; align-items: center;">
         <!-- 视图切换按钮 -->
@@ -52,7 +52,7 @@
     <!-- 图谱/词条容器 -->
     <div :class="['graph-container', { 'fullscreen': isFullScreen }]" style="width: 100%; height: calc(100% - 120px); position: relative; overflow: hidden;">
       <!-- 加载提示和回溯按钮（右上方，调整位置避免遮挡滚动条） -->
-      <div style="position: absolute; top: 10px; right: 30px; display: flex; gap: 10px; z-index: 99999;">
+      <div style="position: absolute; top: 10px; right: 30px; display: flex; gap: 10px; z-index: 999;">
         <el-button 
           type="primary" 
           size="small" 
@@ -143,7 +143,7 @@
       <el-button 
         type="text" 
         @click="initGraph" 
-        style="position: absolute; bottom: 10px; right: 10px; z-index: 99999;"
+        style="position: absolute; bottom: 10px; right: 10px; z-index: 999;"
       >
         重新加载
       </el-button>
