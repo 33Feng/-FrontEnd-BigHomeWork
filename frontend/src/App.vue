@@ -135,19 +135,24 @@ const fetchRecommendData = async (entity) => {
   margin-bottom: 30px;
 }
 
+/* 主布局：强制父容器高度统一，子项继承高度 */
 .main-layout {
   width: 100%;
-  min-height: 700px;
+  min-height: 700px; /* 统一基础高度 */
   display: flex;
+  height: 100%;
 }
 
+/* 分栏容器：强制继承父容器高度 */
 .panel-col {
   height: 100%;
   display: flex;
   box-sizing: border-box;
   padding: 0 10px;
+  flex: 1; /* 确保分栏占满父容器宽度 */
 }
 
+/* 面板通用样式：强制高度100%，统一左右面板高度 */
 .panel {
   background: #f9f9f9; /* 灰色背景 */
   padding: 20px;
@@ -157,18 +162,12 @@ const fetchRecommendData = async (entity) => {
   overflow: hidden; /* 确保内容不超出灰色背景 */
   display: flex;
   flex-direction: column;
+  height: 100%; /* 强制继承分栏容器高度 */
 }
 
-.qa-panel {
-  /* 自适应高度，包裹内部内容 */
-  height: fit-content;
-  min-height: 650px;
-}
-
-.graph-panel {
-  height: 650px;
-  display: flex;
-  flex-direction: column;
+/* 左右面板统一高度，去掉原来的min-height/fit-content */
+.qa-panel, .graph-panel {
+  height: 100%;
 }
 
 .panel h2 {
@@ -189,20 +188,22 @@ const fetchRecommendData = async (entity) => {
   z-index: 5;
 }
 
-/* 响应式调整 */
+/* 响应式调整：小屏上下堆叠时，保持高度统一 */
 @media (max-width: 1200px) {
   .main-layout {
     flex-direction: column;
+    min-height: auto;
   }
   
   .el-col {
     width: 100% !important;
     margin-bottom: 20px;
+    height: auto;
   }
   
   .qa-panel, .graph-panel {
     height: auto;
-    min-height: 600px;
+    min-height: 600px; /* 小屏基础高度 */
   }
 }
 

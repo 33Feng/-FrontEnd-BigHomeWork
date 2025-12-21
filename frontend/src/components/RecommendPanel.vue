@@ -1,29 +1,33 @@
 <template>
   <div class="recommend-panel-container">
+    <!-- 只保留“智能路径/关联推荐/历史记录”导航，去掉下拉框 -->
     <div class="panel-header">
-      <div 
-        class="tab-item" 
-        :class="{ active: activeTab === 'path' }" 
-        @click="activeTab = 'path'"
-      >
-        <el-icon><Guide /></el-icon> 智能路径
-      </div>
-      <div 
-        class="tab-item" 
-        :class="{ active: activeTab === 'related' }" 
-        @click="activeTab = 'related'"
-      >
-        <el-icon><Connection /></el-icon> 关联推荐
-      </div>
-      <div 
-        class="tab-item" 
-        :class="{ active: activeTab === 'history' }" 
-        @click="activeTab = 'history'"
-      >
-        <el-icon><Time /></el-icon> 历史记录
+      <div class="tab-group">
+        <div 
+          class="tab-item" 
+          :class="{ active: activeTab === 'path' }" 
+          @click="activeTab = 'path'"
+        >
+          <el-icon><Guide /></el-icon> 智能路径
+        </div>
+        <div 
+          class="tab-item" 
+          :class="{ active: activeTab === 'related' }" 
+          @click="activeTab = 'related'"
+        >
+          <el-icon><Connection /></el-icon> 关联推荐
+        </div>
+        <div 
+          class="tab-item" 
+          :class="{ active: activeTab === 'history' }" 
+          @click="activeTab = 'history'"
+        >
+          <el-icon><Time /></el-icon> 历史记录
+        </div>
       </div>
     </div>
 
+    <!-- 调整：增加与导航的间距 + 添加上圆角 -->
     <div class="panel-body">
       
       <div v-if="activeTab === 'path'" class="path-view">
@@ -161,7 +165,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['delete-history']);
-const activeTab = ref('path'); // 默认显示路径 Tab
+const activeTab = ref('path'); 
 
 // --- 智能路径相关变量 ---
 const learningPath = ref(null);
@@ -176,12 +180,10 @@ const handleDeleteHistory = (index) => {
 };
 
 const openSearch = (keyword, type) => {
-  // 根据类型选择不同的搜索链接
   let searchUrl;
   if (type === 'pre') {
     searchUrl = `https://developer.mozilla.org/zh-CN/docs/Web/${encodeURIComponent(keyword)}`;
   } else if (type === 'next') {
-    // searchUrl = `https://w3schools.org.cn/search/default.asp?p=${encodeURIComponent(keyword)}`;
     searchUrl = `https://www.w3ccoo.com/?s=${encodeURIComponent(keyword)}`;
   } else {
     searchUrl = `https://www.w3ccoo.com/?s=${encodeURIComponent(keyword)}`;
@@ -214,9 +216,8 @@ const fetchLearningPath = async () => {
 const fetchRecommendations = async () => {
   if (!props.currentEntity) return;
   loadingRecs.value = true;
-  localRecommendations.value = []; // 先清空旧数据
+  localRecommendations.value = []; 
   try {
-    // 调用刚才写的新接口
     const res = await api.getRecommendations(props.currentEntity);
     if (res.data) {
       localRecommendations.value = res.data;
@@ -228,14 +229,11 @@ const fetchRecommendations = async () => {
   }
 }
 
-// 监听实体变化，一变就自动查推荐
+// 监听实体变化
 watch(() => props.currentEntity, (newVal) => {
   if (newVal) {
-    // 1. 路径重置 (等待用户点按钮)
     learningPath.value = null;
     activeTab.value = 'path'; 
-    
-    // 2. 关联推荐立即加载 (不用等 AI)
     fetchRecommendations();
   }
 });
@@ -254,34 +252,35 @@ watch(() => props.currentEntity, (newVal) => {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
 }
 
-/* --- 顶部 Tab 切换 --- */
+/* --- 顶部导航栏 --- */
 .panel-header {
   display: flex;
   border-bottom: 1px solid #eee;
   background: #f8f9fa;
+  width: 100%; /* 确保导航栏占满容器宽度 */
 }
-
+.tab-group {
+  display: flex;
+  width: 100%; /* 让Tab组占满导航栏宽度 */
+}
 .tab-item {
-  flex: 1;
-  text-align: center;
-  padding: 12px 0;
+  flex: 1; /* 三个选项均分宽度，占满整排 */
+  padding: 12px 0; /* 调整内边距，避免文字挤压 */
   font-size: 14px;
   color: #666;
   cursor: pointer;
   transition: all 0.3s;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center; /* 文字居中 */
   gap: 6px;
   border-bottom: 2px solid transparent;
   user-select: none;
 }
-
 .tab-item:hover {
   background: #f0f2f5;
   color: #409EFF;
 }
-
 .tab-item.active {
   color: #409EFF;
   background: #fff;
@@ -289,20 +288,22 @@ watch(() => props.currentEntity, (newVal) => {
   font-weight: 600;
 }
 
-/*内容滚动区*/
+/* 内容区：增加与导航的间距 + 添加上圆角 */
 .panel-body {
   flex: 1;
+  max-height: 300px; /* 超过此高度自动出现滚动条 */
   overflow-y: auto;
-  padding: 16px;
+  padding: 24px 16px; /* 顶部padding增加，拉开与导航的距离 */
   background: #fff;
   position: relative;
+  border-top-left-radius: 8px; /* 左上角圆角 */
+  border-top-right-radius: 8px; /* 右上角圆角 */
 }
 
 /* 自定义滚动条 */
 .panel-body::-webkit-scrollbar {
   width: 6px;
 }
-
 .panel-body::-webkit-scrollbar-thumb {
   background: #e0e0e0;
   border-radius: 4px;
@@ -318,7 +319,6 @@ watch(() => props.currentEntity, (newVal) => {
   text-align: center;
   padding-top: 40px;
 }
-
 .plan-icon-wrapper {
   width: 80px;
   height: 80px;
@@ -329,17 +329,14 @@ watch(() => props.currentEntity, (newVal) => {
   justify-content: center;
   margin-bottom: 20px;
 }
-
 .plan-icon {
   font-size: 40px;
   color: #409EFF;
 }
-
 .start-plan-box h3 {
   margin: 0 0 10px 0;
   color: #303133;
 }
-
 .start-plan-box p {
   color: #909399;
   margin-bottom: 30px;
@@ -355,7 +352,6 @@ watch(() => props.currentEntity, (newVal) => {
   height: 100%;
   padding-top: 60px;
 }
-
 .spinner {
   width: 40px;
   height: 40px;
@@ -365,18 +361,15 @@ watch(() => props.currentEntity, (newVal) => {
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
 }
-
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
 .loading-box p {
   color: #409EFF;
   font-weight: bold;
   margin: 0;
 }
-
 .loading-box .sub-text {
   color: #909399;
   font-weight: normal;
@@ -394,37 +387,27 @@ watch(() => props.currentEntity, (newVal) => {
   color: #303133;
   font-size: 16px;
 }
-
-/* 卡片基础 */
 .path-card {
   border: none;
 }
-
-/* 前置卡片 */
 .pre-card {
   border-left: 3px solid #409EFF;
   background-color: #f0f7ff;
 }
-
-/* 核心卡片 */
 .core-card {
   border-left: 3px solid #67C23A;
   background-color: #f0fff4;
 }
-
-/* 进阶卡片 */
 .next-card {
   border-left: 3px solid #E6A23C;
   background-color: #fffbf0;
 }
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }
-
 .card-title {
   font-weight: bold;
   color: #303133;
@@ -434,37 +417,32 @@ watch(() => props.currentEntity, (newVal) => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .main-title {
   font-size: 16px;
   color: #27ae60;
 }
-
 .card-desc {
   margin: 0;
   font-size: 13px;
   color: #606266;
   line-height: 1.6;
 }
-
 .main-desc {
   color: #38b000;
   font-size: 14px;
 }
 
-/* --- 列表视图样式 (关联推荐/历史记录) --- */
+/* --- 列表视图样式 --- */
 .list-view {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
 }
-
 .list-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .list-item {
   display: flex;
   align-items: center;
@@ -474,12 +452,10 @@ watch(() => props.currentEntity, (newVal) => {
   border: 1px solid #f0f0f0;
   transition: all 0.2s;
 }
-
 .list-item:hover {
   border-color: #e0e7ff;
   background-color: #f9fafc;
 }
-
 .list-icon {
   width: 36px;
   height: 36px;
@@ -490,39 +466,32 @@ watch(() => props.currentEntity, (newVal) => {
   margin-right: 12px;
   color: white;
 }
-
 .bg-blue {
   background-color: #409EFF;
 }
-
 .bg-gray {
   background-color: #909399;
 }
-
 .list-info {
   flex: 1;
   min-width: 0;
 }
-
 .list-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 4px;
 }
-
 .list-name {
   font-weight: bold;
   font-size: 14px;
   color: #303133;
   cursor: pointer;
 }
-
 .list-name:hover {
   text-decoration: underline;
   color: #409EFF;
 }
-
 .list-desc {
   font-size: 12px;
   color: #999;
@@ -530,7 +499,6 @@ watch(() => props.currentEntity, (newVal) => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .list-time {
   font-size: 12px;
   color: #ccc;
