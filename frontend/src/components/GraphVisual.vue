@@ -1,152 +1,150 @@
 <template>
-  <div class="graph-wrapper" style="width: 100%; height: 100%; position: relative;">
-    <!-- 顶部导航栏：标题 + 右侧功能按钮（含视图切换） -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-      <h3 style="margin: 0; color: #333;">图谱词条可切换</h3>
-      <!-- 右侧功能按钮组：视图切换 + 导出 + 全屏 -->
-      <div style="display: flex; gap: 10px; align-items: center;">
-        <!-- 视图切换按钮 -->
+  <div class="graph-wrapper">
+    <div class="float-panel top-left">
+      <transition name="fade">
         <el-button 
-          :type="viewMode === 'graph' ? 'success' : 'primary'" 
-          @click="toggleViewMode"
+          v-if="nodeHistory.length > 1"
+          circle
+          class="glass-btn back-btn" 
+          @click="backToPreviousNode" 
+          title="返回上级"
         >
-          {{ viewMode === 'graph' ? '切换为词条视图' : '切换为图谱视图' }}
+            <el-icon><ArrowLeft /></el-icon>
         </el-button>
+      </transition>
+      
+      <div class="search-capsule glass-panel">
+         <el-input
+          v-model="searchEntity"
+          placeholder="搜索节点..."
+          clearable
+          @keyup="handleInputKeyup" 
+          class="transparent-input"
+         >
+           <template #prefix>
+             <el-icon class="search-icon"><Search /></el-icon>
+           </template>
+         </el-input>
+         <div class="divider-v"></div>
+         <el-button link type="primary" @click="handleSearch" class="search-btn">Go</el-button>
+      </div>
+    </div>
+
+    <div class="float-panel top-right glass-panel toolbar-group">
+        <div class="view-switch">
+            <span 
+              class="switch-item" 
+              :class="{ active: viewMode === 'graph' }" 
+              @click="toggleViewMode"
+            >
+              图谱
+            </span>
+            <span 
+              class="switch-item" 
+              :class="{ active: viewMode === 'terms' }" 
+              @click="toggleViewMode"
+            >
+              列表
+            </span>
+        </div>
+
+        <div class="divider-v"></div>
+
+        <el-tooltip content="显示全部" placement="bottom">
+            <el-button circle link class="tool-btn" @click="showAllGraph">
+              <el-icon><Connection /></el-icon>
+            </el-button>
+        </el-tooltip>
         
-        <!-- 下拉导出菜单 -->
-        <el-dropdown>
-          <el-button plain>
-            <el-icon class="el-icon--left"><Download /></el-icon>
-            导出数据
-            <el-icon class="el-icon--right"><ArrowDown /></el-icon>
-          </el-button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item :icon="Picture" @click="exportGraphImage">导出为图片 (.png)</el-dropdown-item>
-              <el-dropdown-item :icon="Download" @click="exportGraphJSON">导出 JSON 数据</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
+        <el-dropdown trigger="click">
+            <el-button circle link class="tool-btn">
+              <el-icon><Download /></el-icon>
+            </el-button>
+            <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item :icon="Picture" @click="exportGraphImage">导出图片 (.png)</el-dropdown-item>
+                  <el-dropdown-item :icon="Download" @click="exportGraphJSON">导出 JSON 数据</el-dropdown-item>
+                </el-dropdown-menu>
+            </template>
         </el-dropdown>
 
-        <!-- 全屏按钮 -->
-        <el-button plain @click="toggleFullScreen">
-          <el-icon class="el-icon--left"><FullScreen /></el-icon>
-          全屏模式
-        </el-button>
-      </div>
+        <el-tooltip content="全屏模式" placement="bottom">
+          <el-button circle link class="tool-btn" @click="toggleFullScreen">
+              <el-icon><FullScreen /></el-icon>
+          </el-button>
+        </el-tooltip>
+        
+        <el-tooltip content="重新加载" placement="bottom">
+          <el-button circle link class="tool-btn" @click="initGraph">
+              <el-icon><RefreshRight /></el-icon>
+          </el-button>
+        </el-tooltip>
     </div>
 
-    <!-- 搜索区域 -->
-    <div class="search-bar" style="margin-bottom: 10px; display: flex; gap: 10px;">
-      <el-input
-        v-model="searchEntity"
-        placeholder="输入节点名称搜索"
-        clearable
-        @keyup="handleInputKeyup" 
-        style="flex: 1; max-width: 80%;"
-    ></el-input>
-      <el-button type="primary" @click="handleSearch">搜索</el-button>
-      <el-button @click="showAllGraph">显示全部</el-button>
+    <div v-if="loading" class="center-loading">
+       <div class="spinner"></div>
+       <div class="loading-text">
+         {{ currentEntity ? `加载「${currentEntity}」...` : '计算布局中...' }}
+       </div>
     </div>
 
-    <!-- 图谱/词条容器 -->
-    <div :class="['graph-container', { 'fullscreen': isFullScreen }]" style="width: 100%; height: calc(100% - 120px); position: relative; overflow: hidden;">
-      <!-- 加载提示和回溯按钮（右上方，调整位置避免遮挡滚动条） -->
-      <div style="position: absolute; top: 10px; right: 30px; display: flex; gap: 10px; z-index: 999;">
-        <el-button 
-          type="primary" 
-          size="small" 
-          @click="backToPreviousNode"
-          :disabled="nodeHistory.length <= 1"
-          style="padding: 6px 12px; backdrop-filter: blur(2px);"
-        >
-          <el-icon class="el-icon--left"><ArrowLeft /></el-icon>
-          回溯
-        </el-button>
-        <div v-if="loading" class="loading-tip">
-          <el-icon style="margin-right: 5px;"><Loading /></el-icon>
-          {{ currentEntity ? `加载「${currentEntity}」...` : '计算布局中...' }}
-        </div>
-      </div>
-      
-      <!-- 图谱视图 -->
-      <div 
+    <div 
         v-show="viewMode === 'graph'"
         ref="graphRef" 
-        style="width: 100%; height: 100%; border: 1px solid #e6e6e6; border-radius: 8px;"
-      ></div>
-      
-      <!-- 词条视图 -->
-      <div 
-        v-show="viewMode === 'terms'" 
-        class="terms-container"
-      >
-        <div class="terms-header">
-          <h3>实体关系列表</h3>
-          <p v-if="currentEntity">当前实体: {{ currentEntity || '无文本内容' }}</p>
-        </div>
-        <!-- 词条列表滚动容器：限制高度确保内容完整显示 -->
-        <div class="terms-list-wrapper">
-          <div class="terms-list">
-            <!-- 加载中显示骨架屏 -->
-            <div v-if="loading" class="terms-loading">
-              <div class="loading-skeleton" v-for="i in 5" :key="i"></div>
-            </div>
-            
-            <!-- 有数据时显示词条 -->
-            <div 
-              v-else-if="termsData.edges.length > 0"
-              v-for="(edge, index) in termsData.edges" 
-              :key="`${edge.source}-${edge.relation}-${edge.target}-${index}`" 
-              class="term-item"
-            >
-              <!-- 词条添加百度百科链接 -->
-              <a 
-                :href="getBaiduLink(edge.source)" 
-                target="_blank" 
-                class="term-node"
-                :title="edge.source || '无文本内容'"
-              >
-                {{ edge.source || '无文本内容' }}
-              </a>
-              <div class="term-relation">{{ edge.relation || '无关联' }}</div>
-              <a 
-                :href="getBaiduLink(edge.target)" 
-                target="_blank" 
-                class="term-node"
-                :title="edge.target || '无文本内容'"
-              >
-                {{ edge.target || '无文本内容' }}
-              </a>
-              <el-button 
-                type="text" 
-                size="small" 
-                @click="handleTermClick(edge.source === currentEntity ? edge.target : edge.source)"
-                :disabled="
-                  !(edge.source === currentEntity ? edge.target : edge.source) || 
-                  (edge.source === currentEntity ? edge.target : edge.source) === '无文本内容' ||
-                  !hasSubordinateContent(edge.source === currentEntity ? edge.target : edge.source, termsData.edges)
-                "
-              >
-                查看详情
-              </el-button>
-            </div>
-            
-            <!-- 无数据时显示友好提示 -->
-            <div v-else class="no-data">
-              无关联实体关系
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <el-button 
-        type="text" 
-        @click="initGraph" 
-        style="position: absolute; bottom: 10px; right: 10px; z-index: 999;"
-      >
-        重新加载
-      </el-button>
+        class="graph-canvas"
+        :class="{ 'fullscreen-mode': isFullScreen }"
+    ></div>
+
+    <div v-show="viewMode === 'terms'" class="terms-wrapper">
+         <div class="terms-scroll-area">
+             <div v-if="loading" class="terms-loading-skeleton">
+                <div class="skeleton-row" v-for="i in 5" :key="i"></div>
+             </div>
+             
+             <div v-else-if="termsData.edges.length > 0" class="terms-grid">
+                <div 
+                  v-for="(edge, index) in termsData.edges" 
+                  :key="`${edge.source}-${edge.relation}-${edge.target}-${index}`" 
+                  class="term-card"
+                >
+                    <div class="term-content">
+                        <a 
+                          :href="getBaiduLink(edge.source)" 
+                          target="_blank" 
+                          class="node-pill source"
+                          :title="edge.source"
+                        >
+                          {{ edge.source }}
+                        </a>
+                        
+                        <div class="relation-arrow">
+                           <span class="line"></span>
+                           <span class="rel-text">{{ edge.relation }}</span>
+                           <span class="arrow-head">►</span>
+                        </div>
+                        
+                        <a 
+                          :href="getBaiduLink(edge.target)" 
+                          target="_blank" 
+                          class="node-pill target"
+                          :title="edge.target"
+                        >
+                          {{ edge.target }}
+                        </a>
+                    </div>
+                    
+                    <el-button 
+                        type="primary" link size="small" 
+                        class="detail-btn"
+                        @click="handleTermClick(edge.source === currentEntity ? edge.target : edge.source)"
+                        :disabled="!(edge.source === currentEntity ? edge.target : edge.source) || !hasSubordinateContent(edge.source === currentEntity ? edge.target : edge.source, termsData.edges)"
+                    >
+                        查看详情
+                    </el-button>
+                </div>
+             </div>
+             <el-empty v-else description="无关联实体关系" :image-size="80" />
+         </div>
     </div>
   </div>
 </template>
@@ -155,14 +153,15 @@
 import { ref, onMounted, nextTick, onUnmounted, watch,  shallowRef, markRaw } from 'vue';
 import { Network, DataSet } from 'vis-network/standalone';
 import { ElButton, ElMessage, ElInput, ElIcon } from 'element-plus';
-import { FullScreen, Picture, Download, ArrowDown, Loading, ArrowLeft } from '@element-plus/icons-vue';
+// 引入新需要的图标
+import { FullScreen, Picture, Download, ArrowDown, Loading, ArrowLeft, Search, RefreshRight, Connection } from '@element-plus/icons-vue';
 import { api } from '../api/index';
 
-// --- 1. 智能颜色映射 (模糊匹配) ---
+// --- 1. 智能颜色映射 (完全恢复原有逻辑) ---
 const getRelationColor = (relation) => {
   const rel = (relation || '').trim();
   if (!rel) return '#A9A9A9';
-
+  
   // 【橙色系】版本、历史、时间相关
   if (['版本', '历史', '旧', 'Time'].some(k => rel.includes(k))) return '#E6A23C'; 
   // 【红色系】工具、框架、工程化、生态相关
@@ -177,7 +176,7 @@ const getRelationColor = (relation) => {
   if (['属性', '标签', '选择器', '样式', '语法', '指令', '方法', '函数', '声明', '规则', '类型', '参数', '变量', '操作', '钩子', '元素', '插槽', '装饰器', '泛型', '接口', '枚举', '数组', '对象', '字符串', '组件', '值'].some(k => rel.includes(k))) return '#67C23A';
   // 【蓝色系】核心结构、定义、标准、顶层分类 
   if (['核心', '组成', '环节', '领域', '标准', '组织', '定义', '概念', '维度', '进阶', '方案', '优势'].some(k => rel.includes(k))) return '#409EFF';
-
+  
   return '#FFC100';
 };
 
@@ -238,7 +237,7 @@ const formatEmptyText = (text, defaultText = EMPTY_TEXT_PLACEHOLDER, isRelation 
 const toggleViewMode = () => {
   const oldMode = viewMode.value;
   viewMode.value = viewMode.value === 'graph' ? 'terms' : 'graph';
-  
+   
   if (viewMode.value === 'terms') {
     loadTermsData(currentEntity.value || props.mainEntity);
   } else if (viewMode.value === 'graph' && oldMode === 'terms') {
@@ -261,12 +260,12 @@ const backToPreviousNode = () => {
   // 移除当前节点，获取上一个节点
   nodeHistory.value.pop();
   const prevEntity = nodeHistory.value[nodeHistory.value.length - 1];
-  
+   
   searchEntity.value = prevEntity;
   currentEntity.value = prevEntity;
   emit('update:currentEntity', prevEntity);
   emit('getRecommendData', prevEntity);
-  
+   
   if (viewMode.value === 'graph') {
     initGraph(prevEntity);
   } else {
@@ -290,7 +289,7 @@ const destroyNetwork = () => {
 // 检查容器有效性
 const checkContainerValidity = () => {
   if (!graphRef.value) {
-    ElMessage.error('图谱容器不存在');
+    // ElMessage.error('图谱容器不存在');
     return false;
   }
   graphRef.value.style.display = 'none';
@@ -306,10 +305,10 @@ const checkContainerValidity = () => {
   return true;
 };
 
-// --- 核心：初始化图谱 ---
+// --- 核心：初始化图谱 (完全恢复原有逻辑) ---
 const initGraph = async (targetEntity = '', forceFull = false) => {
   if (viewMode.value !== 'graph') return;
-  
+   
   try {
     loading.value = true;
     destroyNetwork();
@@ -393,13 +392,14 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
       nodeHasSubordinates.set(label, rawEdges.some(edge => edge.source === label));
     });
 
+    // 【关键】：恢复原有的 validNodes 逻辑
     let validNodes = Array.from(allNodeLabels)
       .map(label => {
         // 确定节点颜色：有下属节点使用映射颜色，否则使用灰色
         const hasSubordinates = nodeHasSubordinates.get(label);
         const baseColor = hasSubordinates ? 
           (nodeColorMap.get(label) || '#409EFF') : '#CCCCCC';
-        
+         
         return {
           id: label,
           label: label,
@@ -454,7 +454,7 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
         };
       });
 
-    // 8. 配置项 - 优化物理引擎
+    // 8. 配置项 - 优化物理引擎 (恢复原有参数)
     const isLargeGraph = validNodes.length > 100;
     const options = {
       nodes: { 
@@ -502,7 +502,7 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
           fit: true
         }
       },
-      
+       
       interaction: { 
         hover: true, 
         tooltipDelay: 200, 
@@ -512,16 +512,17 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
         zoomView: true,
         zoomSpeed: 0.5 
       },
-      
+       
       layout: { 
         improvedLayout: !isLargeGraph 
       }
     };
 
     // 9. 渲染
-    graphRef.value.style.visibility = 'visible';
-    graphRef.value.style.opacity = '1';
-      
+    if(graphRef.value) {
+        graphRef.value.style.visibility = 'visible';
+        graphRef.value.style.opacity = '1';
+    }
 
     network.value = new Network(
       graphRef.value, 
@@ -543,7 +544,7 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
       if (params.nodes.length > 0) {
         const nodeId = params.nodes[0];
         const node = validNodes.find(n => n.id === nodeId);
-        
+         
         // 无下属节点则不响应点击
         if (!node || !node.hasSubordinates) {
           if (node && !node.hasSubordinates) {
@@ -551,25 +552,25 @@ const initGraph = async (targetEntity = '', forceFull = false) => {
           }
           return;
         }
-        
+         
         if (node.label === EMPTY_TEXT_PLACEHOLDER) {
           ElMessage.info('该节点无文本内容');
           return;
         }
-        
+         
         // 更新当前选中的实体状态
         searchEntity.value = node.label;
         currentEntity.value = node.label;
-        
-        // 记录历史 (用于回溯功能，确保初始状态被保留)
+         
+        // 记录历史
         if (nodeHistory.value[nodeHistory.value.length - 1] !== node.label) {
           nodeHistory.value.push(node.label);
         }
-        
-        // 通知父组件更新推荐
+         
+        // 通知父组件
         emit('update:currentEntity', node.label);
         emit('getRecommendData', node.label); 
-        
+         
         // 直接调用 initGraph
         initGraph(node.label);
       }
@@ -614,10 +615,10 @@ const getContrastColor = (color) => {
   const R = parseInt(color.substring(1, 3), 16);
   const G = parseInt(color.substring(3, 5), 16);
   const B = parseInt(color.substring(5, 7), 16);
-  
+   
   // 计算亮度
   const luminance = (0.299 * R + 0.587 * G + 0.114 * B) / 255;
-  
+   
   // 亮度大于0.5使用黑色，否则使用白色
   return luminance > 0.5 ? '#000000' : '#FFFFFF';
 };
@@ -625,7 +626,7 @@ const getContrastColor = (color) => {
 // 加载词条数据 
 const loadTermsData = async (entity = '') => {
   if (viewMode.value !== 'terms') return;
-  
+   
   loading.value = true;
   try {
     let res;
@@ -634,7 +635,7 @@ const loadTermsData = async (entity = '') => {
     } else {
       res = await api.getFullGraphData ? await api.getFullGraphData() : await api.getGraphData();
     }
-    
+     
     const data = res?.data || { nodes: [], edges: [] };
     const formattedEdges = Array.isArray(data.edges) ? data.edges.map(edge => ({
       source: formatEmptyText(edge.source || edge.from),
@@ -642,16 +643,17 @@ const loadTermsData = async (entity = '') => {
       relation: formatEmptyText(edge.relation || edge.label, EMPTY_RELATION_PLACEHOLDER, true)
     })).filter(edge => 
       edge.source && edge.target && edge.relation && 
+      edge.source !== edge.target && 
       edge.source !== EMPTY_TEXT_PLACEHOLDER && 
       edge.target !== EMPTY_TEXT_PLACEHOLDER
     ) : [];
-    
+     
     const validNodeLabels = new Set();
     formattedEdges.forEach(edge => {
       validNodeLabels.add(edge.source);
       validNodeLabels.add(edge.target);
     });
-    
+     
     termsData.value = {
       nodes: Array.from(validNodeLabels).map(node => ({ id: node, label: node })),
       edges: formattedEdges
@@ -670,22 +672,19 @@ const handleTermClick = (entity) => {
     ElMessage.warning('无效的实体名称');
     return;
   }
-  // 检查是否有下属内容
   if (!hasSubordinateContent(entity, termsData.value.edges)) {
     ElMessage.info(`「${entity}」无下属关联内容`);
-    // 依然可以查看推荐
     emit('getRecommendData', entity);
     return;
   }
-  // 记录历史 (确保初始状态被保留)
   if (nodeHistory.value[nodeHistory.value.length - 1] !== entity) {
     nodeHistory.value.push(entity);
   }
-  
+   
   currentEntity.value = entity;
   emit('update:currentEntity', entity);
   emit('getRecommendData', entity);
-  
+   
   if (viewMode.value === 'graph') {
     initGraph(entity);
   } else {
@@ -693,15 +692,14 @@ const handleTermClick = (entity) => {
   }
 };
 
-// 显示核心节点（初始化历史记录为初始状态）
+// 显示核心节点
 const showAllGraph = () => {
   searchEntity.value = '';
   currentEntity.value = '';
   emit('update:currentEntity', '');
   emit('getRecommendData', '');
-  // 初始状态用空字符串标识，作为历史记录的第一个元素
   nodeHistory.value = [''];
-  
+   
   if (viewMode.value === 'graph') {
     initGraph('', false);
   } else {
@@ -747,7 +745,6 @@ const exportGraphJSON = () => {
 const handleFullScreenChange = () => {
   const isFull = !!document.fullscreenElement || !!document.webkitFullscreenElement || !!document.msFullscreenElement;
   isFullScreen.value = isFull;
-  // 退出全屏时，如果是显示全部状态且没有选中实体，重置为核心视图以防卡顿
   if (!isFull && !currentEntity.value) {
     if (viewMode.value === 'graph') initGraph('', false);
   }
@@ -755,7 +752,7 @@ const handleFullScreenChange = () => {
 
 // 切换全屏模式
 const toggleFullScreen = async () => {
-  const container = document.querySelector('.graph-container');
+  const container = document.querySelector('.graph-wrapper'); // 全屏容器
   if (!container) return;
 
   try {
@@ -766,12 +763,12 @@ const toggleFullScreen = async () => {
       if (container.requestFullscreen) await container.requestFullscreen();
       else if (container.webkitRequestFullscreen) await container.webkitRequestFullscreen();
       else if (container.msRequestFullscreen) await container.msRequestFullscreen();
-      ElMessage.success(`已进入全屏模式`);
+      ElMessage.success(`进入全屏`);
     } else {
       if (document.exitFullscreen) await document.exitFullscreen();
       else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
       else if (document.msExitFullscreen) await document.msExitFullscreen();
-      ElMessage.info(`已退出全屏模式`);
+      ElMessage.info(`退出全屏`);
     }
   } catch (error) {
     ElMessage.error(`全屏操作失败：${error.message}`);
@@ -792,16 +789,14 @@ const handleSearch = () => {
     showAllGraph();
     return;
   }
-  
-  // 记录历史（确保初始状态被保留）
   if (nodeHistory.value[nodeHistory.value.length - 1] !== entity) {
     nodeHistory.value.push(entity);
   }
-  
+   
   currentEntity.value = entity;
   emit('update:currentEntity', entity);
   emit('getRecommendData', entity);
-  
+   
   if (viewMode.value === 'graph') {
     initGraph(entity);
   } else {
@@ -809,13 +804,12 @@ const handleSearch = () => {
   }
 };
 
-// 监听父组件实体变化（初始化历史记录）
+// 监听父组件实体变化
 watch(
   () => props.mainEntity,
   (newEntity) => {
     if (newEntity && newEntity.trim() && currentEntity.value !== newEntity.trim()) {
       const entity = formatEmptyText(newEntity.trim());
-      // 初始时如果历史为空，添加初始实体到历史（作为初始状态）
       if (nodeHistory.value.length === 0) {
         nodeHistory.value.push(entity);
       } else if (nodeHistory.value[nodeHistory.value.length - 1] !== entity) {
@@ -833,7 +827,6 @@ onMounted(async () => {
   await nextTick();
   setTimeout(() => { 
     viewMode.value === 'graph' ? initGraph(props.mainEntity) : loadTermsData(props.mainEntity); 
-    // 初始化历史记录：如果父组件有初始实体，添加到历史；否则添加空字符串（显示全部）
     if (props.mainEntity && props.mainEntity.trim()) {
       const entity = formatEmptyText(props.mainEntity.trim());
       if (nodeHistory.value.length === 0) {
@@ -859,220 +852,262 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 容器样式 */
+/* 核心容器*/
 .graph-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
-  box-sizing: border-box;
-}
-
-.graph-container {
-  position: relative;
-  width: 100%;
-  height: calc(100% - 120px);
-  border-radius: 8px;
-  box-sizing: border-box;
-  background-color: #fff;
-}
-
-/* 加载提示 */
-.loading-tip {
-  padding: 6px 12px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 20px;
-  font-size: 14px;
-  color: #666;
-  display: flex;
-  align-items: center;
-  backdrop-filter: blur(2px);
-  z-index: 99999 !important;
-}
-
-/* 全屏样式 */
-.graph-container.fullscreen {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: 99999 !important;
-  background: white !important;
-  border: none !important;
-  margin: 0 !important;
-  padding: 20px !important;
-}
-
-.graph-container.fullscreen :deep(.vis-network) {
-  width: 100% !important;
-  height: 100% !important;
-  outline: none;
-}
-
-/* 词条视图样式 */
-.terms-container {
-  width: 100%;
-  height: 100%;
-  border: 1px solid #e6e6e6;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
+  background-color: #FAFAFA; /* 极淡的底色 */
+  background-image: radial-gradient(#CBD5E1 1px, transparent 1px); /* 点阵背景 */
+  background-size: 24px 24px;
   overflow: hidden;
-}
-
-.terms-header {
-  padding: 15px;
-  border-bottom: 1px solid #e6e6e6;
-  background-color: #f5f7fa;
-}
-
-.terms-header h3 {
-  margin: 0 0 5px 0;
-  font-size: 16px;
-  color: #333;
-}
-
-.terms-header p {
-  margin: 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.terms-list-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
-  box-sizing: border-box;
-}
-
-.terms-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
-.terms-loading {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 10px 0;
-}
-
-.loading-skeleton {
-  height: 50px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: 6px;
-}
-
-@keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* 词条项样式 */
-.term-item {
+/* 悬浮面板 */
+.float-panel {
+  position: absolute;
+  z-index: 20;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: #f5f7fa;
+}
+
+.top-left {
+  top: 20px;
+  left: 20px;
+}
+
+.top-right {
+  top: 20px;
+  right: 20px;
+}
+
+/* 玻璃拟态效果 */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 4px;
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 搜索胶囊 */
+.search-capsule {
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+  transition: all 0.3s ease;
+}
+
+.search-capsule:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.transparent-input :deep(.el-input__wrapper) {
+  box-shadow: none !important;
+  background: transparent;
+  padding: 0 8px;
+  width: 180px;
+}
+
+.search-icon {
+  color: #94A3B8;
+}
+
+.divider-v {
+  width: 1px;
+  height: 16px;
+  background: #E2E8F0;
+  margin: 0 4px;
+}
+
+.search-btn {
+  font-weight: 600;
+}
+
+/* 视图切换开关 */
+.view-switch {
+  display: flex;
+  background: #F1F5F9;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.switch-item {
+  padding: 4px 12px;
+  font-size: 13px;
+  color: #64748B;
   border-radius: 6px;
-  flex-wrap: wrap;
-  transition: background-color 0.3s;
-}
-
-.term-item:hover {
-  background: #eef2f7;
-}
-
-.term-node {
-  padding: 6px 12px;
-  background: #e8f4fd;
-  border-radius: 4px;
-  font-weight: 500;
-  white-space: nowrap;
-  color: #1989FA;
-  text-decoration: none;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
-.term-node:hover {
-  background: #d1e7fd;
-  text-decoration: underline;
-  color: #0C6ECD;
+.switch-item.active {
+  background: #FFFFFF;
+  color: var(--primary-color);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.term-node[href="javascript:void(0);"] {
-  color: #909399;
-  cursor: not-allowed;
-  background: #f5f5f5;
+/* 工具按钮 */
+.toolbar-group {
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.term-node[href="javascript:void(0);"]:hover {
-  text-decoration: none;
-  background: #f5f5f5;
+.tool-btn {
+  color: #64748B;
+  font-size: 16px;
 }
 
-.term-relation {
-  padding: 6px 12px;
-  color: #666;
-  flex: 1;
-  min-width: 120px;
-  white-space: nowrap;
+.tool-btn:hover {
+  color: var(--primary-color);
+  background: #F1F5F9;
+}
+
+/*  画布与内容  */
+.center-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E0E7FF;
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  font-size: 13px;
+  color: #64748B;
+  background: rgba(255,255,255,0.9);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.graph-canvas {
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+/*  列表视图优化  */
+.terms-wrapper {
+  width: 100%;
+  height: 100%;
+  padding-top: 80px; /* 避开悬浮栏 */
+  box-sizing: border-box;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.no-data {
-  text-align: center;
-  padding: 40px 20px;
-  color: #999;
+.terms-scroll-area {
+  height: 100%;
+  overflow-y: auto;
+  padding: 0 30px 30px 30px;
+}
+
+.terms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* 词条卡片 */
+.term-card {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.term-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.term-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 14px;
 }
 
-/* Vis-network 样式覆盖 */
-:deep(.vis-network) {
-  width: 100% !important;
-  height: 100% !important;
-  overflow: hidden !important;
+.node-pill {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #F8FAFC;
+  color: #334155;
+  font-weight: 500;
+  text-decoration: none;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-:deep(.vis-node) {
-  transition: all 0.2s;
-  z-index: 100 !important;
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
+.node-pill:hover {
+  background: #EEF2FF;
+  color: var(--primary-color);
 }
 
-:deep(.vis-node:hover) {
-  stroke: #000000 !important;
-  stroke-width: 3px !important;
+.relation-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  margin: 0 8px;
+  color: #94A3B8;
+  font-size: 12px;
 }
 
-:deep(.vis-label) {
-  font-size: 12px !important;
-  padding: 2px 5px !important;
-  border-radius: 3px !important;
-  background-color: rgba(255, 255, 255, 0.8) !important;
+.relation-arrow .line {
+  width: 100%;
+  height: 1px;
+  background: #E2E8F0;
+  margin-bottom: 2px;
 }
 
-:deep(.vis-edge) {
-  transition: all 0.3s;
+.relation-arrow .arrow-head {
+  font-size: 10px;
+  margin-top: -8px;
 }
 
-:deep(.vis-edge:hover) {
-  stroke-width: 3px !important;
-}
-
-/* 全屏模式样式适配 */
-.fullscreen .terms-container,
-.fullscreen :deep(.vis-network) {
-  height: 100% !important;
-}
-
-/* 确保Element Plus提示在全屏时可见 */
-:deep(.el-message) {
-  z-index: 999999 !important;
+.detail-btn {
+  align-self: flex-end;
 }
 </style>
