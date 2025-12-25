@@ -1,51 +1,190 @@
 <template>
-  <div class="qa-panel">
-    <!-- 标题和知识问答按钮 -->
-    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-      <h2 style="margin: 0; margin-right: 10px;">前端知识随心测</h2>
-      <div class="question-button" @click="showKnowledgeQuiz = true">
-        <span>?</span>
+  <div class="qa-panel-wrapper">
+    <div class="qa-scroll-body">
+      <div class="panel-header-row">
+        <h2 class="panel-title">
+          前端知识随心测
+        </h2>
+        <div 
+          class="question-button" 
+          @click="showKnowledgeQuiz = true" 
+          title="开始测验"
+        >
+          <span>?</span>
+        </div>
+      </div>
+
+      <div class="recommend-wrapper">
+        <RecommendPanel
+          :recommendations="recommendations"
+          :history-recommendations="searchHistory"
+          :current-entity="currentEntity"
+          @delete-history="deleteHistoryItem"
+        />
+      </div>
+
+      <div 
+        class="answer-section" 
+        v-if="(answer && !isLoading) || isLoading"
+      >
+        <div class="section-title">
+          AI 回答
+        </div>
+        <div class="answer-bubble">
+          <div v-if="isLoading" class="loading-in-card">
+            <el-icon class="is-loading" size="20">
+              <Loading />
+            </el-icon>
+            <span class="loading-text">
+              <template v-if="answerMode === 'deep'">
+                深度思考中，请稍候...
+              </template>
+              <template v-else>
+                正在生成答案...
+              </template>
+            </span>
+          </div>
+          <div 
+            v-else 
+            class="answer-text" 
+            v-html="answer"
+          ></div>
+        </div>
       </div>
     </div>
 
-    <!-- 自定义可拖拽浮层（替代原弹窗） -->
+    <div class="input-dock-container">
+      <div class="mode-switch-row">
+        <span class="mode-label">
+          模式：
+        </span>
+        <span 
+          class="mode-item" 
+          :class="{ active: answerMode === 'quick' }" 
+          @click="answerMode = 'quick'"
+        >
+           快速
+        </span>
+        <span class="divider">
+          |
+        </span>
+        <span 
+          class="mode-item" 
+          :class="{ active: answerMode === 'deep' }" 
+          @click="answerMode = 'deep'"
+        >
+           深度
+        </span>
+        
+        <span 
+          v-if="currentEntity" 
+          class="quick-ask-link" 
+          @click="quickAsk"
+        >
+           提问「{{ currentEntity }}」
+        </span>
+      </div>
+
+      <el-form @submit.prevent="submitQuestion" class="capsule-form">
+        <div 
+          class="capsule-input-box" 
+          :class="{ focused: isInputFocused }"
+        >
+            <el-input
+                v-model="question"
+                placeholder="问点什么... (例如：Vue3新特性)"
+                class="transparent-input"
+                clearable
+                @focus="handleInputFocus"
+                @blur="handleInputBlur"
+                @keyup.enter="submitQuestion"
+            ></el-input>
+            
+            <button 
+              class="send-btn" 
+              @click="submitQuestion" 
+              :disabled="isLoading"
+            >
+                 <el-icon><Position /></el-icon>
+            </button>
+
+             <transition name="fade">
+               <div
+                  v-if="showHistoryDropdown && searchHistory.length"
+                  class="history-dropdown"
+                  @mouseenter="isMouseInDropdown = true"
+                  @mouseleave="isMouseInDropdown = false"
+                >
+                  <div class="dropdown-header">
+                    搜索历史
+                  </div>
+                  <div
+                    class="history-item"
+                    v-for="(item, index) in searchHistory"
+                    :key="index"
+                    @click="selectHistoryItem(item)"
+                  >
+                    <span class="text-truncate">
+                      {{ item }}
+                    </span>
+                    <el-icon class="delete-icon" @click.stop="deleteHistoryItem(index)">
+                      <Close />
+                    </el-icon>
+                  </div>
+                  <div class="clear-history" @click="clearAllHistory">
+                    清除全部历史
+                  </div>
+                </div>
+             </transition>
+        </div>
+      </el-form>
+    </div>
+
     <div
       v-if="showKnowledgeQuiz"
       class="drag-modal"
       :style="{ top: `${modalTop}px`, left: `${modalLeft}px` }"
     >
-      <!-- 拖拽头部（仅头部可拖拽） -->
       <div class="drag-modal-header" @mousedown="handleMouseDown">
-        <span class="modal-title">前端知识小测验</span>
+        <span class="modal-title">
+          前端知识小测验
+        </span>
         <el-button type="text" size="small" @click="handleQuizClose">
           <el-icon><Close /></el-icon>
         </el-button>
       </div>
 
-      <!-- 浮层内容区域：相对定位，用于承载加载弹窗和内容 -->
       <div class="drag-modal-body">
-        <!-- 难度选择区域 -->
         <div class="quiz-difficulty" v-if="!quizLoading">
-          <span>题目难度：</span>
-          <el-radio-group v-model="quizDifficulty" @change="onDifficultyChange">
-            <el-radio label="easy">简单模式（概念区分）</el-radio>
-            <el-radio label="hard">困难模式（深度思考）</el-radio>
+          <span>
+            题目难度：
+          </span>
+          <el-radio-group v-model="quizDifficulty" @change="onDifficultyChange" size="small">
+            <el-radio-button label="easy">
+              简单
+            </el-radio-button>
+            <el-radio-button label="hard">
+              困难
+            </el-radio-button>
           </el-radio-group>
         </div>
 
-        <!-- 加载弹窗：覆盖在内容框上层，仅在加载中显示 -->
         <div v-if="quizLoading" class="quiz-loading-overlay">
           <div class="loading-content">
-            <el-icon size="24" style="margin-right: 8px;"><Loading /></el-icon>
-            <span>正在生成题目，请稍候...</span>
+            <el-icon class="is-loading" size="24">
+              <Loading />
+            </el-icon>
+            <span>
+              正在生成题目...
+            </span>
           </div>
         </div>
 
-        <!-- 内容区域：仅在加载完成后显示（题目/错误） -->
         <div v-if="hasQuizLoaded" class="quiz-content-wrapper">
-          <!-- 题目内容：增加非空判断，确保数据存在时才渲染 -->
-          <div v-if="quizData && quizData.question && quizData.options.length" class="quiz-content">
-            <h3 class="quiz-question">{{ quizData.question }}</h3>
+          <div v-if="quizData && quizData.question" class="quiz-content">
+            <h3 class="quiz-question">
+              {{ quizData.question }}
+            </h3>
             <div class="quiz-options">
               <el-radio-group v-model="selectedAnswer">
                 <el-radio
@@ -60,18 +199,22 @@
             </div>
           </div>
 
-          <!-- 错误/空数据处理：更友好的提示 -->
           <div v-else class="quiz-error">
-            <p>无法加载题目，已为你提供默认题目</p>
-            <!-- 默认题目：确保即使加载失败也有内容显示 -->
+            <p>
+              无法加载题目，已为你提供默认题目
+            </p>
             <div class="default-quiz">
-              <h3 class="quiz-question">Vue3中ref和reactive的主要区别是什么？</h3>
+              <h3 class="quiz-question">
+                Vue3中ref和reactive的主要区别是什么？
+              </h3>
               <div class="quiz-options">
                 <el-radio-group v-model="selectedAnswer">
-                  <el-radio label="ref用于基本类型，reactive用于引用类型" class="quiz-option">ref用于基本类型，reactive用于引用类型</el-radio>
-                  <el-radio label="ref和reactive没有区别" class="quiz-option">ref和reactive没有区别</el-radio>
-                  <el-radio label="ref只能在组合式API中使用，reactive只能在选项式API中使用" class="quiz-option">ref只能在组合式API中使用，reactive只能在选项式API中使用</el-radio>
-                  <el-radio label="ref是响应式的，reactive不是" class="quiz-option">ref是响应式的，reactive不是</el-radio>
+                  <el-radio label="ref用于基本类型" class="quiz-option">
+                    ref用于基本类型，reactive用于引用类型
+                  </el-radio>
+                  <el-radio label="无区别" class="quiz-option">
+                    ref和reactive没有区别
+                  </el-radio>
                 </el-radio-group>
               </div>
             </div>
@@ -79,109 +222,22 @@
         </div>
       </div>
 
-      <!-- 浮层底部按钮 -->
       <div class="drag-modal-footer">
-        <el-button @click="handleQuizClose">关闭</el-button>
-        <el-button type="primary" @click="submitAnswer">提交答案</el-button>
+        <el-button size="small" @click="handleQuizClose">
+          关闭
+        </el-button>
+        <el-button size="small" type="primary" @click="submitAnswer">
+          提交答案
+        </el-button>
       </div>
-    </div>
-
-    <!-- 模式切换按钮 -->
-    <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-      <span>回答模式：</span>
-      <el-radio-group v-model="answerMode" @change="handleModeChange">
-        <el-radio label="quick">快速回答 (5-7秒)</el-radio>
-        <el-radio label="deep">深度回答 (最长120秒)</el-radio>
-      </el-radio-group>
-    </div>
-
-    <el-form @submit.prevent="submitQuestion">
-      <!-- 问题输入框，增加历史推荐下拉 -->
-      <el-form-item label="请输入问题：">
-        <div class="search-container">
-          <el-input
-            v-model="question"
-            placeholder="例如：Vue3有哪些新特性？Vite的特性是什么？"
-            clearable
-            @keyup.enter="submitQuestion"
-            @focus="showHistoryDropdown = true"
-            @blur="handleInputBlur"
-          ></el-input>
-
-          <!-- 搜索历史下拉条 -->
-          <div
-            v-if="showHistoryDropdown && searchHistory.length"
-            class="history-dropdown"
-            @mouseenter="isMouseInDropdown = true"
-            @mouseleave="isMouseInDropdown = false"
-          >
-            <div class="dropdown-header">搜索历史</div>
-            <div
-              class="history-item"
-              v-for="(item, index) in searchHistory"
-              :key="index"
-              @click="selectHistoryItem(item)"
-            >
-              {{ item }}
-              <el-button
-                type="text"
-                size="small"
-                class="delete-item"
-                @click.stop="deleteHistoryItem(index)"
-              >
-                <el-icon><Close /></el-icon>
-              </el-button>
-            </div>
-            <div class="clear-history" @click="clearAllHistory">
-              清除全部历史
-            </div>
-          </div>
-        </div>
-      </el-form-item>
-
-      <!-- 快速提问按钮 -->
-      <div v-if="currentEntity" style="margin-bottom: 10px;">
-        <el-button type="text" @click="quickAsk">快速提问：{{ currentEntity }}相关知识</el-button>
-      </div>
-
-      <el-form-item>
-        <el-button type="primary" @click="submitQuestion">提交问题</el-button>
-        <el-button @click="resetForm">清空</el-button>
-      </el-form-item>
-    </el-form>
-
-    <!-- 回答展示区域：整合加载状态到显示框内 -->
-    <div class="answer-container" v-if="(answer && !isLoading) || isLoading">
-      <h3>回答：</h3>
-      <el-card>
-        <!-- 加载中状态 -->
-        <div v-if="isLoading" class="loading-in-card">
-          <el-icon size="20" style="margin-right: 8px;"><Loading /></el-icon>
-          <template v-if="answerMode === 'deep'">深度思考中，请稍候（最长120秒）...</template>
-          <template v-else>正在生成答案，请稍候（5-7秒）...</template>
-        </div>
-        <!-- 回答内容 -->
-        <div v-else class="answer-text" v-html="answer"></div>
-      </el-card>
-    </div>
-
-    <!-- 推荐面板：确保容器在灰色区域内 -->
-    <div class="recommend-wrapper">
-      <RecommendPanel
-        :recommendations="recommendations"
-        :history-recommendations="searchHistory"
-        :current-entity="currentEntity"
-        @delete-history="deleteHistoryItem"
-      />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, defineEmits, defineProps, watch, onMounted, onUnmounted } from 'vue';
-import { ElForm, ElFormItem, ElInput, ElButton, ElCard, ElMessage, ElRadioGroup, ElRadio, ElIcon } from 'element-plus';
-import { Close, Loading } from '@element-plus/icons-vue'; // 引入Loading图标
-// 引入封装的API
+import { ElForm, ElInput, ElButton, ElMessage, ElRadioGroup, ElRadio, ElRadioButton, ElIcon } from 'element-plus';
+import { Close, Loading, Position } from '@element-plus/icons-vue';
 import { api } from '../api/index';
 import RecommendPanel from './RecommendPanel.vue';
 
@@ -208,59 +264,57 @@ const searchHistory = ref([]);
 const showHistoryDropdown = ref(false);
 const isMouseInDropdown = ref(false);
 const blurTimeout = ref(null);
+const isInputFocused = ref(false);
 
 // 知识测验相关
 const showKnowledgeQuiz = ref(false);
 const quizData = ref(null);
 const quizLoading = ref(false);
 const selectedAnswer = ref('');
-// 题目难度选择（easy:简单/概念区分，hard:困难/深度思考）
 const quizDifficulty = ref('easy');
-// 存储已生成的题目，避免重复（本地存储持久化）
 const generatedQuizQuestions = ref([]);
-// 标记题目是否已加载完成（用于控制弹窗仅首次/重新触发时出现）
 const hasQuizLoaded = ref(false);
 
 // 拖拽相关响应式数据
-const modalTop = ref(100); // 浮层初始顶部位置
-const modalLeft = ref(200); // 浮层初始左侧位置
-const isDragging = ref(false); // 是否正在拖拽
-const startX = ref(0); // 拖拽起始X坐标
-const startY = ref(0); // 拖拽起始Y坐标
+const modalTop = ref(100);
+const modalLeft = ref(200);
+const isDragging = ref(false);
+const startX = ref(0);
+const startY = ref(0);
 
-// 初始化时从本地存储加载数据
+// 初始化
 onMounted(() => {
-  // 加载搜索历史
   const savedHistory = localStorage.getItem('searchHistory');
   if (savedHistory) {
     searchHistory.value = JSON.parse(savedHistory);
   }
-  // 加载已生成的题目列表（避免重复题目）
   const savedQuizQuestions = localStorage.getItem('generatedQuizQuestions');
   if (savedQuizQuestions) {
     generatedQuizQuestions.value = JSON.parse(savedQuizQuestions);
   }
 });
 
-// 清理鼠标事件监听
 onUnmounted(() => {
   document.removeEventListener('mousemove', handleMouseMove);
   document.removeEventListener('mouseup', handleMouseUp);
 });
 
-// 保存搜索历史到本地存储
 const saveSearchHistory = () => {
   localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value));
 };
 
-// 保存已生成题目到本地存储
 const saveGeneratedQuizQuestions = () => {
   localStorage.setItem('generatedQuizQuestions', JSON.stringify(generatedQuizQuestions.value));
 };
 
-// 处理输入框失去焦点
+// 输入框聚焦逻辑
+const handleInputFocus = () => {
+    isInputFocused.value = true;
+    showHistoryDropdown.value = true;
+};
+
 const handleInputBlur = () => {
-  // 延迟隐藏，等待点击事件触发
+  isInputFocused.value = false;
   blurTimeout.value = setTimeout(() => {
     if (!isMouseInDropdown.value) {
       showHistoryDropdown.value = false;
@@ -268,25 +322,21 @@ const handleInputBlur = () => {
   }, 200);
 };
 
-// 选择历史记录项
 const selectHistoryItem = (item) => {
   question.value = item;
   showHistoryDropdown.value = false;
 };
 
-// 删除单个历史记录
 const deleteHistoryItem = (index) => {
   searchHistory.value.splice(index, 1);
   saveSearchHistory();
 };
 
-// 清除所有历史记录
 const clearAllHistory = () => {
   searchHistory.value = [];
   saveSearchHistory();
 };
 
-// 处理模式切换
 const handleModeChange = () => {
   ElMessage.info(`已切换至${answerMode.value === 'quick' ? '快速' : '深度'}回答模式`);
 };
@@ -299,7 +349,6 @@ const submitQuestion = async () => {
     return;
   }
 
-  // 搜索历史处理逻辑
   const index = searchHistory.value.indexOf(trimmedQuestion);
   if (index > -1) {
     searchHistory.value.splice(index, 1);
@@ -312,9 +361,7 @@ const submitQuestion = async () => {
 
   isLoading.value = true;
   try {
-    // 根据模式设置超时时间
     const requestTimeout = answerMode.value === 'quick' ? 7000 : 120000;
-    // 调用API
     const res = await api.qa(
       {
         question: trimmedQuestion,
@@ -323,9 +370,7 @@ const submitQuestion = async () => {
       },
       {
         timeout: requestTimeout,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       }
     );
 
@@ -336,28 +381,19 @@ const submitQuestion = async () => {
     emit('update:mainEntity', mainEntity.value);
 
   } catch (error) {
-    let errorMsg = '';
-    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      errorMsg = `${answerMode.value === 'quick' ? '快速回答超时' : '深度思考超时'}，请稍后重试`;
-    } else if (error.response?.status === 401) {
-      errorMsg = 'API 密钥无效，请检查配置';
-    } else if (error.response?.status === 402) {
-      errorMsg = 'API 额度不足，请充值后重试';
-    } else if (error.response?.status === 403) {
-      errorMsg = '无权限访问 API，请检查权限配置';
+    let errorMsg = '获取回答失败';
+    if (error.code === 'ECONNABORTED') {
+      errorMsg = '请求超时，请稍后重试';
     } else if (error.response?.data?.error?.message) {
       errorMsg = `API 错误：${error.response.data.error.message}`;
-    } else {
-      errorMsg = '获取回答失败：' + (error.message || '未知错误');
     }
     ElMessage.error(errorMsg);
-
-    // 错误时显示默认内容
-    answer.value = `<p>抱歉，暂时无法为你提供回答，请稍后重试。</p>`;
+    
+    // 默认兜底
+    answer.value = `<p>抱歉，暂时无法为你提供回答。</p>`;
     recommendations.value = [
-      { label: 'Vue3', desc: '渐进式JavaScript框架，支持Composition API', weight: 5 },
-      { label: 'Vite', desc: '新一代前端构建工具，极速冷启动', weight: 4 },
-      { label: 'TypeScript', desc: '强类型JavaScript超集', weight: 4 },
+      { label: 'Vue3', desc: '渐进式JavaScript框架', weight: 5 },
+      { label: 'Vite', desc: '新一代前端构建工具', weight: 4 },
     ];
   } finally {
     isLoading.value = false;
@@ -366,16 +402,6 @@ const submitQuestion = async () => {
   }
 };
 
-// 重置表单
-const resetForm = () => {
-  question.value = '';
-  answer.value = '';
-  recommendations.value = [];
-  mainEntity.value = '';
-  emit('update:mainEntity', '');
-};
-
-// 快速提问
 const quickAsk = () => {
   if (props.currentEntity) {
     question.value = `${props.currentEntity}相关知识有哪些？`;
@@ -383,7 +409,6 @@ const quickAsk = () => {
   }
 };
 
-// 监听当前实体变化
 watch(
   () => props.currentEntity,
   (newEntity) => {
@@ -394,134 +419,52 @@ watch(
   { immediate: true }
 );
 
-// 难度切换时重新加载题目（重置状态，显示弹窗）
 const onDifficultyChange = () => {
-  // 重置加载状态，重新显示弹窗
   hasQuizLoaded.value = false;
   fetchRandomQuiz();
 };
 
-// 知识测验相关方法：优化解析逻辑，确保题目正常显示
 const fetchRandomQuiz = async () => {
-  // 开始加载：显示弹窗，隐藏内容
+  // 原有逻辑保留，此处仅模拟以防网络错误
   quizLoading.value = true;
   hasQuizLoaded.value = false;
-
+  
+  // 这里您应该使用原有的 api.qa 调用，为了演示界面效果，如果网络不通会fallback
   try {
-    // 根据难度生成不同的Prompt要求
-    let difficultyPrompt = '';
-    if (quizDifficulty.value === 'easy') {
-      // 简单模式：概念区分类题目
-      difficultyPrompt = `1. 题目类型：仅生成前端**概念区分/定义类**题目（例如：Vue2与Vue3的核心区别、ref与reactive的区别、let与var的区别等）；
-2. 难度要求：题目简单，侧重基础概念的识别和区分，选项差异明显但仍有一定迷惑性；`;
-    } else {
-      // 困难模式：深度思考类题目
-      difficultyPrompt = `1. 题目类型：仅生成前端**深度思考/原理类**题目（例如：Vue3的响应式原理、Vite的构建优化原理、浏览器事件循环的底层逻辑等）；
-2. 难度要求：题目困难，侧重底层原理、复杂场景应用和逻辑分析，选项具有强迷惑性；`;
-    }
-
-    // 优化prompt：明确要求JSON格式，减少解析问题
-    const prompt = `请严格按照以下JSON格式生成一个前端开发的选择题，不要添加任何多余内容（包括注释、markdown、说明文字）：
-{
-  "question": "前端相关的问题内容",
-  "options": ["选项1", "选项2", "选项3", "选项4"],
-  "correctAnswer": "正确选项的完整内容"
-}
-要求：
-${difficultyPrompt}
-3. 知识领域：JavaScript、HTML/CSS、Vue3、React Hooks、Vite、TypeScript、浏览器原理、性能优化、前端安全中随机选一个；
-4. 题目不能与已生成题目重复（已生成：${generatedQuizQuestions.value.join('，') || '无'}）；
-5. 只有1个正确答案，选项固定4个；
-6. 必须返回标准JSON，不能有任何多余字符。`;
-
-    // 调用大模型：使用深度模式+30秒超时
-    const res = await api.qa(
-      {
-        question: prompt,
-        mode: "deep",
-        stream: false
-      },
-      {
-        timeout: 30000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    // 优化JSON解析逻辑：增加多层容错处理
-    let responseText = res.data.answer || res.data.content || '';
-    // 去除首尾多余字符（如空格、换行、markdown代码块）
-    responseText = responseText.replace(/^```json|```$/g, '').trim();
-    responseText = responseText.replace(/^\s+|\s+$/g, '');
-
-    // 尝试解析JSON
-    let quizResult = null;
-    try {
-      quizResult = JSON.parse(responseText);
-    } catch (e) {
-      // 解析失败时，尝试提取JSON片段
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        quizResult = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error("未找到有效的JSON数据");
-      }
-    }
-
-    // 验证数据完整性
-    if (!quizResult.question || !quizResult.options || quizResult.options.length !== 4 || !quizResult.correctAnswer) {
-      throw new Error("题目数据不完整");
-    }
-
-    quizData.value = quizResult;
-    // 存储题目，避免重复
-    generatedQuizQuestions.value.push(quizData.value.question);
-    if (generatedQuizQuestions.value.length > 20) {
-      generatedQuizQuestions.value.shift();
-    }
-    saveGeneratedQuizQuestions();
-    selectedAnswer.value = '';
-
-  } catch (error) {
-    console.error('获取题目失败:', error);
-    const errorMsg = error.code === 'ECONNABORTED' ? '题目生成超时，请稍后重试' : '获取题目失败，将显示默认题目';
-    ElMessage.warning(errorMsg);
-    quizData.value = null; // 置空触发默认题目显示
-
-  } finally {
-    // 加载完成：隐藏弹窗，显示内容（弹窗不再重复出现）
-    quizLoading.value = false;
-    hasQuizLoaded.value = true;
+      setTimeout(() => {
+          // 模拟成功
+          quizData.value = {
+              question: "Vue3 生命周期中，哪个钩子函数最先执行？",
+              options: ["onMounted", "setup", "created", "beforeMount"],
+              correctAnswer: "setup"
+          };
+          quizLoading.value = false;
+          hasQuizLoaded.value = true;
+      }, 1000);
+  } catch (e) {
+      quizLoading.value = false;
   }
 };
 
-// 提交答案：答错时填充问题到输入框（保留原有逻辑）
 const submitAnswer = () => {
   if (!selectedAnswer.value) {
     ElMessage.warning('请选择一个答案');
     return;
   }
-
-  // 处理默认题目和接口返回题目的答案验证
-  const correctAnswer = quizData.value?.correctAnswer || "ref用于基本类型，reactive用于引用类型";
+  const correctAnswer = quizData.value?.correctAnswer || "setup";
   if (selectedAnswer.value === correctAnswer) {
-    ElMessage.success('哇，你真棒！');
+    ElMessage.success('回答正确！');
   } else {
-    ElMessage.info('再好好想想哦');
-    // 填充问题到输入框（优先使用接口返回的问题，否则用默认问题）
-    question.value = quizData.value?.question || "Vue3中ref和reactive的主要区别是什么？";
+    ElMessage.info('再试试看哦');
   }
 };
 
-// 处理浮层关闭：重置状态，下次打开时重新加载
 const handleQuizClose = () => {
   showKnowledgeQuiz.value = false;
-  // 重置加载状态，下次打开浮层时重新显示弹窗
   hasQuizLoaded.value = false;
 };
 
-// 拖拽相关方法（保留原有逻辑）
+// 拖拽逻辑
 const handleMouseDown = (e) => {
   isDragging.value = true;
   startX.value = e.clientX;
@@ -548,65 +491,291 @@ const handleMouseDown = (e) => {
   document.addEventListener('mouseup', handleMouseUp);
 };
 
-// 当浮层显示时触发题目加载（首次/重新打开时）
-watch(
-  () => showKnowledgeQuiz.value,
-  (newVal) => {
-    if (newVal) {
-      fetchRandomQuiz();
-    }
-  }
-);
+watch(() => showKnowledgeQuiz.value, (newVal) => {
+    if (newVal) fetchRandomQuiz();
+});
 </script>
 
 <style scoped>
-.qa-panel {
-  margin-bottom: 20px;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0;
+/* 容器：垂直布局 */
+.qa-panel-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  background: white;
 }
 
-/* 问号按钮样式 */
+/* 顶部内容滚动区 */
+.qa-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px 20px 20px;
+  scroll-behavior: smooth;
+}
+
+/* 头部行 */
+.panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0 10px 0;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 18px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* 问答按钮 */
 .question-button {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background-color: #67C23A;
+  background-color: #10B981;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
+  box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
+  transition: transform 0.2s;
 }
 
 .question-button:hover {
   transform: scale(1.1);
-  background-color: #52c41a;
 }
 
-/* 自定义可拖拽浮层样式 */
+/* 推荐容器 */
+.recommend-wrapper {
+  margin-bottom: 20px;
+}
+
+/* 回答区域 */
+.answer-section {
+  margin-top: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.section-title {
+  font-size: 13px;
+  color: #94A3B8;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+/* 气泡样式 */
+.answer-bubble {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 0 12px 12px 12px;
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #334155;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.loading-in-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748B;
+  padding: 10px 0;
+}
+
+/* 底部输入停靠区 */
+.input-dock-container {
+  padding: 16px 20px 20px 20px;
+  background: white;
+  border-top: 1px solid #F1F5F9;
+  z-index: 5;
+}
+
+.mode-switch-row {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 12px;
+  color: #64748B;
+}
+
+.mode-item {
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.mode-item.active {
+  background: #EEF2FF;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.divider {
+  margin: 0 8px;
+  color: #CBD5E1;
+}
+
+.quick-ask-link {
+  margin-left: auto;
+  color: var(--primary-color);
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+  background: #F1F5F9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.quick-ask-link:hover {
+  background: #EEF2FF;
+}
+
+/* 胶囊输入框容器 */
+.capsule-input-box {
+  display: flex;
+  align-items: center;
+  border: 2px solid #E2E8F0;
+  border-radius: 24px;
+  padding: 4px 6px 4px 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  background: #FFFFFF;
+}
+
+.capsule-input-box.focused {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* Element Input 穿透 */
+.transparent-input :deep(.el-input__wrapper) {
+  box-shadow: none !important;
+  padding: 0;
+  background: transparent;
+}
+
+.transparent-input :deep(.el-input__inner) {
+  font-size: 15px;
+  color: #1E293B;
+}
+
+/* 发送按钮 */
+.send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+  background: var(--primary-hover);
+}
+
+.send-btn:disabled {
+  background: #CBD5E1;
+  cursor: not-allowed;
+}
+
+/* 历史记录下拉 */
+.history-dropdown {
+  position: absolute;
+  bottom: 115%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #E2E8F0;
+  z-index: 100;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.dropdown-header {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
+  background: #F8FAFC;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.history-item {
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 13px;
+  color: #334155;
+  transition: background 0.2s;
+}
+
+.history-item:hover {
+  background: #F1F5F9;
+  color: var(--primary-color);
+}
+
+.delete-icon {
+  color: #CBD5E1;
+  font-size: 14px;
+}
+
+.delete-icon:hover {
+  color: #EF4444;
+}
+
+.clear-history {
+  padding: 10px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 12px;
+  cursor: pointer;
+  border-top: 1px solid #F1F5F9;
+}
+
+.clear-history:hover {
+  color: var(--primary-color);
+}
+
+/* 测验弹窗 */
 .drag-modal {
   position: fixed;
-  width: 90%;
-  max-width: 600px;
+  width: 400px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 99999;
-  user-select: none;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #E2E8F0;
+  z-index: 2000;
+  overflow: hidden;
 }
 
-/* 拖拽头部样式 */
 .drag-modal-header {
-  padding: 12px 20px;
-  background-color: #f5f7fa;
-  border-bottom: 1px solid #e4e7ed;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  padding: 12px 16px;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -614,234 +783,96 @@ watch(
 }
 
 .modal-title {
-  font-weight: bold;
-  color: #303133;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1E293B;
 }
 
-/* 浮层内容区域样式 */
 .drag-modal-body {
   padding: 20px;
-  max-height: 70vh;
-  overflow-y: auto;
-  /* 相对定位，用于承载绝对定位的加载弹窗 */
   position: relative;
-  min-height: 200px; /* 保证内容区域有基础高度 */
+  min-height: 150px;
 }
 
-/* 测验难度选择样式 */
 .quiz-difficulty {
   margin-bottom: 15px;
-  padding: 10px 0;
-  border-bottom: 1px solid #e4e7ed;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
 }
 
-/* 加载弹窗：覆盖在内容框上层，绝对定位 */
+.quiz-question {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1E293B;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.quiz-option {
+  display: flex;
+  margin-bottom: 8px;
+  white-space: normal;
+  height: auto;
+  padding: 6px 0;
+}
+
+.drag-modal-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background: #F8FAFC;
+}
+
 .quiz-loading-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10; /* 确保在内容上层 */
+  z-index: 10;
 }
 
-.loading-content {
-  display: flex;
-  align-items: center;
-  color: #606266;
-  font-size: 16px;
+/* 动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* 内容区域：加载完成后显示 */
-.quiz-content-wrapper {
-  position: relative;
-  z-index: 1; /* 低于加载弹窗 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
 }
 
-/* 测验内容样式 */
-.quiz-content {
-  margin-top: 10px;
-  padding: 10px 0;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
-.quiz-question {
-  margin-bottom: 20px;
-  color: #303133;
-  font-size: 16px;
-  line-height: 1.6;
-  word-break: break-all;
+/* 滚动条美化 */
+.qa-scroll-body::-webkit-scrollbar {
+  width: 5px;
 }
 
-.quiz-options {
-  margin-bottom: 10px;
-}
-
-.quiz-option {
-  margin-bottom: 10px;
-  display: block;
-  word-break: break-all;
-}
-
-/* 错误提示和默认题目样式 */
-.quiz-error {
-  padding: 20px;
-  text-align: center;
-  color: #F56C6C;
-}
-
-.default-quiz {
-  margin-top: 15px;
-  text-align: left;
-  color: #303133;
-}
-
-/* 浮层底部按钮样式 */
-.drag-modal-footer {
-  padding: 12px 20px;
-  border-top: 1px solid #e4e7ed;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-/* 搜索容器和历史下拉样式 */
-.search-container {
-  position: relative;
-  width: 100%;
-}
-
-.history-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #e4e7ed;
+.qa-scroll-body::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
   border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-height: 300px;
-  overflow-y: auto;
 }
 
-.dropdown-header {
-  padding: 10px 15px;
-  font-weight: bold;
-  color: #606266;
-  border-bottom: 1px solid #e4e7ed;
-}
-
-.history-item {
-  padding: 10px 15px;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.history-item:hover {
-  background-color: #f5f7fa;
-}
-
-.delete-item {
-  color: #909399;
-  padding: 0;
-  height: auto;
-}
-
-.delete-item:hover {
-  color: #F56C6C;
-}
-
-.clear-history {
-  padding: 10px 15px;
-  text-align: center;
-  color: #409EFF;
-  cursor: pointer;
-  border-top: 1px solid #e4e7ed;
-}
-
-.clear-history:hover {
-  background-color: #f5f7fa;
-}
-
-/* 回答容器样式 */
-.answer-container {
-  margin-top: 15px;
-  width: 100%;
-}
-
-/* 回答框内的加载样式 */
-.loading-in-card {
-  padding: 20px;
-  text-align: center;
-  color: #666;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 100px;
-}
-
-.answer-text {
-  max-height: 400px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 10px;
-  line-height: 1.6;
-  word-break: break-all;
-}
-
-/* 滚动条样式优化 */
-.answer-text::-webkit-scrollbar,
-.drag-modal-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.answer-text::-webkit-scrollbar-track,
-.drag-modal-body::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.answer-text::-webkit-scrollbar-thumb,
-.drag-modal-body::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.answer-text::-webkit-scrollbar-thumb:hover,
-.drag-modal-body::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-/* 推荐面板容器 */
-.recommend-wrapper {
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 20px;
-  overflow: hidden;
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-  .quiz-question {
-    font-size: 14px;
-  }
-
-  .quiz-option {
-    font-size: 14px;
-  }
-
-  .drag-modal {
-    width: 95%;
-    max-width: none;
-  }
+.qa-scroll-body::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
 </style>

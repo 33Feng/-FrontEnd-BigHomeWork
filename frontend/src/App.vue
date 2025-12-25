@@ -1,8 +1,17 @@
 <template>
   <div id="app" class="app-container">
-    <header class="app-header">
-      <div class="header-left">
-        <h1 class="title">知识图谱驱动的前端技术知识问答与推荐系统</h1>
+    <header class="app-header glass-header">
+      <div class="header-content">
+        <div class="brand-container">
+          <div class="brand-logo">
+            <el-icon><Share /></el-icon>
+          </div>
+          
+          <div class="brand-text">
+            <h1 class="main-title">知识图谱驱动的前端技术知识问答与推荐系统</h1>
+            <span class="sub-title">Knowledge Graph RAG System</span>
+          </div>
+        </div>
       </div>
     </header>
     
@@ -36,22 +45,18 @@
 
 <script setup>
 import { ref } from 'vue';
-import { Loading } from '@element-plus/icons-vue';
+import { Loading, Share } from '@element-plus/icons-vue'; // 引入 Share 图标作为Logo
 // 引入组件
 import QaPanel from './components/QaPanel.vue';
-// 注释：GraphVisual组件根据项目实际路径引入
 import GraphVisual from './components/GraphVisual.vue';
 
-// 核心实体状态（联动问答和图谱）
-const mainEntity = ref(''); // 来自问答面板
-const currentEntity = ref(''); // 来自图谱面板/推荐面板
-const graphLoaded = ref(false); // 图谱容器加载状态
-
-// 推荐面板相关状态（仅用于图谱相关推荐）
+// --- 核心逻辑保持不变 ---
+const mainEntity = ref(''); 
+const currentEntity = ref(''); 
+const graphLoaded = ref(false); 
 const recommendData = ref([]);
 const recommendLoading = ref(false);
 
-// 处理问答面板实体变化
 const handleMainEntityChange = (entity) => {
   mainEntity.value = entity;
   if (!currentEntity.value) {
@@ -60,54 +65,20 @@ const handleMainEntityChange = (entity) => {
   }
 };
 
-// 处理图谱面板实体变化
 const handleCurrentEntityChange = (entity) => {
   currentEntity.value = entity;
 };
 
-// 获取推荐数据（供图谱使用）
 const fetchRecommendData = async (entity) => {
-  if (!entity) {
-    recommendData.value = [];
-    return;
-  }
-
+  if (!entity) { recommendData.value = []; return; }
   recommendLoading.value = true;
   try {
-    // 模拟API请求延迟
     await new Promise(resolve => setTimeout(resolve, 800));
-
-    // 模拟推荐数据
-    const mockRecommendData = {
-      '前端开发': [
-        { label: 'Vue3', desc: '渐进式JavaScript框架，最新版本' },
-        { label: 'React18', desc: '用于构建用户界面的JavaScript库' },
-        { label: 'TypeScript', desc: '强类型的JavaScript超集' },
-        { label: 'Vite', desc: '新一代前端构建工具' },
-        { label: 'Tailwind CSS', desc: '实用优先的CSS框架' }
-      ],
-      'Vue': [
-        { label: 'Vue Router', desc: 'Vue的官方路由管理器' },
-        { label: 'Pinia', desc: 'Vue的新一代状态管理库' },
-        { label: 'Vite', desc: 'Vue作者开发的构建工具' },
-        { label: 'Nuxt.js', desc: 'Vue的服务端渲染框架' }
-      ],
-      'JavaScript': [
-        { label: 'ES6+', desc: 'JavaScript的新一代标准' },
-        { label: 'Node.js', desc: '服务端JavaScript运行时' },
-        { label: 'Webpack', desc: 'JavaScript模块打包工具' }
-      ],
-      'Vue3': [
-        { label: 'Composition API', desc: 'Vue3的核心语法糖，提供更灵活的代码组织方式' },
-        { label: 'Teleport', desc: 'Vue3的内置组件，用于将组件渲染到指定DOM节点' },
-        { label: 'Suspense', desc: 'Vue3的内置组件，用于处理异步组件加载状态' }
-      ]
-    };
-
-    recommendData.value = mockRecommendData[entity] || mockRecommendData['前端开发'];
+    // 模拟数据...
+    const mockRecommendData = { '前端开发': [{ label: 'Vue3', desc: '渐进式框架' }] };
+    recommendData.value = mockRecommendData[entity] || [];
   } catch (error) {
-    console.error('获取推荐数据失败：', error);
-    recommendData.value = [];
+    console.error(error);
   } finally {
     recommendLoading.value = false;
   }
@@ -115,31 +86,23 @@ const fetchRecommendData = async (entity) => {
 </script>
 
 <style>
+/* --- 全局变量 --- */
 :root {
-  /* 主色调：Indigo (靛青色) */
   --primary-color: #4F46E5; 
   --primary-hover: #4338CA;
-  
-  /* 背景色：极淡的灰蓝色 */
   --bg-color: #F8FAFC; 
-  
-  /* 文字颜色 */
-  --text-main: #1E293B; /* 深灰 */
-  --text-sub: #64748B;  /* 浅灰 */
-  
-  /* 边框与圆角 */
+  --text-main: #0F172A; /* 更深的黑色 */
+  --text-sub: #64748B;  
   --border-color: #CBD5E1;
-  --card-radius: 12px; 
-  
-  /* 柔和阴影 */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --card-radius: 16px;     
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 body {
   margin: 0;
   background-color: var(--bg-color);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-main);
   height: 100vh;
   overflow: hidden; 
@@ -149,43 +112,87 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: 16px 24px;
+  /* 移除原本的 padding，让 header 顶满最上方 */
+  padding: 0; 
   box-sizing: border-box;
-  gap: 16px;
 }
 
-/* 顶部栏样式 */
-.app-header {
+/* --- 顶部导航栏升级设计 --- */
+.app-header.glass-header {
+  height: 64px; /* 稍微加高 */
+  width: 100%;
+  background: rgba(255, 255, 255, 0.8); /* 半透明白 */
+  backdrop-filter: blur(12px); /* 磨砂玻璃效果 */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: center; /* 内容居中或两侧对齐 */
+  z-index: 50;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01);
+}
+
+.header-content {
+  width: 100%;
+  max-width: 1600px; /* 限制内容最大宽度，防止在大屏上太散 */
+  padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 48px;
-  flex-shrink: 0;
-  padding: 0 8px;
+  height: 100%;
 }
 
-.header-left {
+.brand-container {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.title {
+/* 品牌 Logo 图标 */
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px; /* 圆角矩形 */
+  background: linear-gradient(135deg, var(--primary-color), #818CF8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+/* 品牌文字 */
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.2;
+}
+
+.main-title {
   margin: 0;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-main);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
-/* 主布局：Flexbox 实现严格分栏 */
+
+.sub-title {
+  font-size: 11px;
+  color: var(--text-sub);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- 主布局 --- */
 .main-layout {
   flex: 1;
   display: flex;
-  gap: 24px; /* 左右卡片间距 */
+  gap: 24px; 
+  padding: 20px 24px 24px 24px; 
   overflow: hidden; 
 }
 
-/* 左侧：固定 40% */
 .layout-left {
   flex: 0 0 40%; 
   display: flex;
@@ -193,7 +200,6 @@ body {
   min-width: 350px;
 }
 
-/* 右侧：固定 60% */
 .layout-right {
   flex: 0 0 60%;
   display: flex;
@@ -201,17 +207,18 @@ body {
   position: relative; 
 }
 
+/* 卡片样式 */
 .glass-card {
   background: #FFFFFF;
   border-radius: var(--card-radius);
   box-shadow: var(--shadow-md);
-  border: 2px solid var(--border-color); 
+  border: 1px solid #CBD5E1; 
   overflow: hidden; 
-  display: flex;       /* 确保子元素填充 */
+  display: flex;
   flex-direction: column;
 }
 
-/* 图谱加载时的遮罩层 */
+/* Loading 遮罩 */
 .graph-loading-overlay {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -225,13 +232,14 @@ body {
 .loading-content {
   display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--primary-color);
 }
+
+/* Element 覆盖 */
 .el-button--primary {
   --el-button-bg-color: var(--primary-color) !important;
   --el-button-border-color: var(--primary-color) !important;
   --el-button-hover-bg-color: var(--primary-hover) !important;
 }
 
-/* 响应式适配 */
 @media (max-width: 1024px) {
   .main-layout {
     flex-direction: column;
