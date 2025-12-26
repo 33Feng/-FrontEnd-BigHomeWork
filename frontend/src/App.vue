@@ -11,7 +11,7 @@
           </div>
           <div class="brand-text">
             <h1 class="main-title">南开大学软件学院前端技术知识问答与推荐系统</h1>
-            <span class="sub-title">Knowledge Graph RAG System of Nankai University Software College</span>
+            <span class="sub-title">Frontend Technology Knowledge Q&A and Recommendation System of the College of Software, Nankai University</span>
           </div>
         </div>
       </div>
@@ -189,7 +189,6 @@ body {
   font-size: 11px;
   color: var(--text-sub);
   font-weight: 500;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
