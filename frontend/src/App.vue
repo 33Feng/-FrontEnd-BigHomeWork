@@ -3,13 +3,15 @@
     <header class="app-header glass-header">
       <div class="header-content">
         <div class="brand-container">
-          <div class="brand-logo">
-            <el-icon><Share /></el-icon>
+          <div>
+            <img 
+              src="./assets/nankai.png" 
+              alt="Logo" 
+              class="logo-img" />
           </div>
-          
           <div class="brand-text">
-            <h1 class="main-title">知识图谱驱动的前端技术知识问答与推荐系统</h1>
-            <span class="sub-title">Knowledge Graph RAG System</span>
+            <h1 class="main-title">南开大学软件学院前端技术知识问答与推荐系统</h1>
+            <span class="sub-title">Knowledge Graph RAG System of Nankai University Software College</span>
           </div>
         </div>
       </div>
@@ -117,6 +119,12 @@ body {
   box-sizing: border-box;
 }
 
+.logo-img {
+  width: 55px; /* 根据需要调整大小 */
+  height: 55px;
+  object-fit: contain; /* 保持图片比例 */
+}
+
 /* --- 顶部导航栏升级设计 --- */
 .app-header.glass-header {
   height: 64px; /* 稍微加高 */
@@ -147,6 +155,7 @@ body {
 }
 
 /* 品牌 Logo 图标 */
+/*暂时没用了，先留着看后面还会不会用到*/
 .brand-logo {
   width: 36px;
   height: 36px;
