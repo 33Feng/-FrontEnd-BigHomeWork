@@ -186,7 +186,7 @@ const getBaiduLink = (text) => {
   if (!text || text === placeholder) {
     return 'javascript:void(0);'; // 空内容不跳转
   }
-  return `https://baike.baidu.com/item/${encodeURIComponent(text.trim())}`;
+  return `https://www.w3ccoo.com/?s=${encodeURIComponent(text)}`;
 };
 
 // 接收父组件传递的核心实体
