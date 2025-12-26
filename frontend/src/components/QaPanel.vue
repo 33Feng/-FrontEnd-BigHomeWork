@@ -61,7 +61,7 @@
         <span 
           class="mode-item" 
           :class="{ active: answerMode === 'quick' }" 
-          @click="answerMode = 'quick'"
+          @click="answerMode = 'quick'; handleModeChange()"
         >
            快速
         </span>
@@ -71,7 +71,7 @@
         <span 
           class="mode-item" 
           :class="{ active: answerMode === 'deep' }" 
-          @click="answerMode = 'deep'"
+          @click="answerMode = 'deep'; handleModeChange()"
         >
            深度
         </span>
@@ -161,10 +161,10 @@
           </span>
           <el-radio-group v-model="quizDifficulty" @change="onDifficultyChange" size="small">
             <el-radio-button label="easy">
-              简单
+              简单模式（概念区分）
             </el-radio-button>
             <el-radio-button label="hard">
-              困难
+              困难模式（深度思考）
             </el-radio-button>
           </el-radio-group>
         </div>
@@ -180,8 +180,9 @@
           </div>
         </div>
 
+        <!-- 核心修改：增加滚动区域限制 -->
         <div v-if="hasQuizLoaded" class="quiz-content-wrapper">
-          <div v-if="quizData && quizData.question" class="quiz-content">
+          <div v-if="quizData && quizData.question && quizData.options && quizData.options.length === 4" class="quiz-content">
             <h3 class="quiz-question">
               {{ quizData.question }}
             </h3>
@@ -209,11 +210,17 @@
               </h3>
               <div class="quiz-options">
                 <el-radio-group v-model="selectedAnswer">
-                  <el-radio label="ref用于基本类型" class="quiz-option">
+                  <el-radio label="ref用于基本类型，reactive用于引用类型" class="quiz-option">
                     ref用于基本类型，reactive用于引用类型
                   </el-radio>
-                  <el-radio label="无区别" class="quiz-option">
+                  <el-radio label="ref和reactive没有区别" class="quiz-option">
                     ref和reactive没有区别
+                  </el-radio>
+                  <el-radio label="ref只能在组合式API中使用，reactive只能在选项式API中使用" class="quiz-option">
+                    ref只能在组合式API中使用，reactive只能在选项式API中使用
+                  </el-radio>
+                  <el-radio label="ref是响应式的，reactive不是" class="quiz-option">
+                    ref是响应式的，reactive不是
                   </el-radio>
                 </el-radio-group>
               </div>
@@ -386,14 +393,21 @@ const submitQuestion = async () => {
       errorMsg = '请求超时，请稍后重试';
     } else if (error.response?.data?.error?.message) {
       errorMsg = `API 错误：${error.response.data.error.message}`;
+    } else if (error.response?.status === 401) {
+      errorMsg = 'API 密钥无效，请检查配置';
+    } else if (error.response?.status === 402) {
+      errorMsg = 'API 额度不足，请充值后重试';
+    } else if (error.response?.status === 403) {
+      errorMsg = '无权限访问 API，请检查权限配置';
     }
     ElMessage.error(errorMsg);
     
     // 默认兜底
     answer.value = `<p>抱歉，暂时无法为你提供回答。</p>`;
     recommendations.value = [
-      { label: 'Vue3', desc: '渐进式JavaScript框架', weight: 5 },
-      { label: 'Vite', desc: '新一代前端构建工具', weight: 4 },
+      { label: 'Vue3', desc: '渐进式JavaScript框架，支持Composition API', weight: 5 },
+      { label: 'Vite', desc: '新一代前端构建工具，极速冷启动', weight: 4 },
+      { label: 'TypeScript', desc: '强类型JavaScript超集', weight: 4 },
     ];
   } finally {
     isLoading.value = false;
@@ -424,38 +438,116 @@ const onDifficultyChange = () => {
   fetchRandomQuiz();
 };
 
+// 完整的测验题目生成逻辑
 const fetchRandomQuiz = async () => {
-  // 原有逻辑保留，此处仅模拟以防网络错误
+  // 开始加载：显示弹窗，隐藏内容
   quizLoading.value = true;
   hasQuizLoaded.value = false;
-  
-  // 这里您应该使用原有的 api.qa 调用，为了演示界面效果，如果网络不通会fallback
+
   try {
-      setTimeout(() => {
-          // 模拟成功
-          quizData.value = {
-              question: "Vue3 生命周期中，哪个钩子函数最先执行？",
-              options: ["onMounted", "setup", "created", "beforeMount"],
-              correctAnswer: "setup"
-          };
-          quizLoading.value = false;
-          hasQuizLoaded.value = true;
-      }, 1000);
-  } catch (e) {
-      quizLoading.value = false;
+    // 根据难度生成不同的Prompt要求
+    let difficultyPrompt = '';
+    if (quizDifficulty.value === 'easy') {
+      // 简单模式：概念区分类题目
+      difficultyPrompt = `1. 题目类型：仅生成前端**概念区分/定义类**题目（例如：Vue2与Vue3的核心区别、ref与reactive的区别、let与var的区别等）；
+2. 难度要求：题目简单，侧重基础概念的识别和区分，选项差异明显但仍有一定迷惑性；`;
+    } else {
+      // 困难模式：深度思考类题目
+      difficultyPrompt = `1. 题目类型：仅生成前端**深度思考/原理类**题目（例如：Vue3的响应式原理、Vite的构建优化原理、浏览器事件循环的底层逻辑等）；
+2. 难度要求：题目困难，侧重底层原理、复杂场景应用和逻辑分析，选项具有强迷惑性；`;
+    }
+
+    // 优化prompt：明确要求JSON格式，减少解析问题
+    const prompt = `请严格按照以下JSON格式生成一个前端开发的选择题，不要添加任何多余内容（包括注释、markdown、说明文字）：
+{
+  "question": "前端相关的问题内容",
+  "options": ["选项1", "选项2", "选项3", "选项4"],
+  "correctAnswer": "正确选项的完整内容"
+}
+要求：
+${difficultyPrompt}
+3. 知识领域：JavaScript、HTML/CSS、Vue3、React Hooks、Vite、TypeScript、浏览器原理、性能优化、前端安全中随机选一个；
+4. 题目不能与已生成题目重复（已生成：${generatedQuizQuestions.value.join('，') || '无'}）；
+5. 只有1个正确答案，选项固定4个；
+6. 必须返回标准JSON，不能有任何多余字符。`;
+
+    // 调用大模型：使用深度模式+30秒超时
+    const res = await api.qa(
+      {
+        question: prompt,
+        mode: "deep",
+        stream: false
+      },
+      {
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    // 优化JSON解析逻辑：增加多层容错处理
+    let responseText = res.data.answer || res.data.content || '';
+    // 去除首尾多余字符（如空格、换行、markdown代码块）
+    responseText = responseText.replace(/^```json|```$/g, '').trim();
+    responseText = responseText.replace(/^\s+|\s+$/g, '');
+
+    // 尝试解析JSON
+    let quizResult = null;
+    try {
+      quizResult = JSON.parse(responseText);
+    } catch (e) {
+      // 解析失败时，尝试提取JSON片段
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        quizResult = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error("未找到有效的JSON数据");
+      }
+    }
+
+    // 验证数据完整性
+    if (!quizResult.question || !quizResult.options || quizResult.options.length !== 4 || !quizResult.correctAnswer) {
+      throw new Error("题目数据不完整");
+    }
+
+    quizData.value = quizResult;
+    // 存储题目，避免重复
+    generatedQuizQuestions.value.push(quizData.value.question);
+    if (generatedQuizQuestions.value.length > 20) {
+      generatedQuizQuestions.value.shift();
+    }
+    saveGeneratedQuizQuestions();
+    selectedAnswer.value = '';
+
+  } catch (error) {
+    console.error('获取题目失败:', error);
+    const errorMsg = error.code === 'ECONNABORTED' ? '题目生成超时，请稍后重试' : '获取题目失败，将显示默认题目';
+    ElMessage.warning(errorMsg);
+    quizData.value = null; // 置空触发默认题目显示
+
+  } finally {
+    // 加载完成：隐藏弹窗，显示内容
+    quizLoading.value = false;
+    hasQuizLoaded.value = true;
   }
 };
 
+// 优化的提交答案逻辑（答错时填充问题到输入框）
 const submitAnswer = () => {
   if (!selectedAnswer.value) {
     ElMessage.warning('请选择一个答案');
     return;
   }
-  const correctAnswer = quizData.value?.correctAnswer || "setup";
+
+  // 处理默认题目和接口返回题目的答案验证
+  const correctAnswer = quizData.value?.correctAnswer || "ref用于基本类型，reactive用于引用类型";
   if (selectedAnswer.value === correctAnswer) {
-    ElMessage.success('回答正确！');
+    ElMessage.success('哇，你真棒！');
   } else {
-    ElMessage.info('再试试看哦');
+    ElMessage.info('再好好想想哦');
+    // 填充问题到输入框（优先使用接口返回的问题，否则用默认问题）
+    question.value = quizData.value?.question || "Vue3中ref和reactive的主要区别是什么？";
   }
 };
 
@@ -760,10 +852,13 @@ watch(() => showKnowledgeQuiz.value, (newVal) => {
   color: var(--primary-color);
 }
 
-/* 测验弹窗 */
+/* 测验弹窗 - 核心修改：响应式宽度 */
 .drag-modal {
   position: fixed;
-  width: 400px;
+  /* 响应式宽度：最大90vw，最小300px，自适应中间宽度 */
+  max-width: 90vw;
+  width: 55%;
+  min-width: 300px;
   background: white;
   border-radius: 16px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -802,20 +897,44 @@ watch(() => showKnowledgeQuiz.value, (newVal) => {
   font-size: 13px;
 }
 
+/* 核心修改：题目内容滚动区域限制 */
+.quiz-content-wrapper {
+  max-height: 220px; /* 固定最大高度 */
+  overflow-y: auto;  /* 超出显示垂直滚动条 */
+  padding-right: 8px; /* 给滚动条预留空间 */
+  margin-top: 10px;
+}
+
+/* 滚动条美化（仅题目区域） */
+.quiz-content-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quiz-content-wrapper::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 3px;
+}
+
+.quiz-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
 .quiz-question {
   font-size: 15px;
   font-weight: 600;
   color: #1E293B;
   margin-bottom: 16px;
   line-height: 1.5;
+  word-wrap: break-word; /* 长题目自动换行 */
 }
 
 .quiz-option {
   display: flex;
   margin-bottom: 8px;
-  white-space: normal;
+  white-space: normal; /* 长选项自动换行 */
   height: auto;
   padding: 6px 0;
+  word-wrap: break-word; /* 确保选项文字不溢出 */
 }
 
 .drag-modal-footer {
