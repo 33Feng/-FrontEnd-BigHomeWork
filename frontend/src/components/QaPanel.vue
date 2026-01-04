@@ -3,13 +3,20 @@
     <div class="qa-scroll-body">
       <div class="panel-header-row">
         <h2 class="panel-title">
+          前端知识问答与推荐
+          <span style="margin-left: 225px;">
+          </span>
           前端知识随心测
         </h2>
+        <!-- <h2 class="panel-question-title">
+          
+        </h2> -->
         <div 
           class="question-button" 
           @click="showKnowledgeQuiz = true" 
           title="开始测验"
         >
+          
           <span>?</span>
         </div>
       </div>
@@ -625,8 +632,18 @@ watch(() => showKnowledgeQuiz.value, (newVal) => {
   font-weight: 600;
 }
 
+.panel-question-title{
+  text-align: end;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
 /* 问答按钮 */
 .question-button {
+  margin-left: 0;
   width: 28px;
   height: 28px;
   border-radius: 50%;

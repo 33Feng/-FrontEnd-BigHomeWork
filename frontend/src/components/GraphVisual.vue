@@ -182,7 +182,7 @@ const getRelationColor = (relation) => {
 
 // 生成百度百科链接
 const getBaiduLink = (text) => {
-  const placeholder = '无文本内容';
+  const placeholder = '你想知道的';
   if (!text || text === placeholder) {
     return 'javascript:void(0);'; // 空内容不跳转
   }
