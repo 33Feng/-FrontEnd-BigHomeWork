@@ -127,5 +127,5 @@ npm run serve 启动报错：<br>
 后端依赖更新：pip install --upgrade <包名>；<br>
 定期清理 node_modules：rm -rf node_modules && npm install（解决依赖冲突）。<br>
 <div align="right">
-项目维护：前端技术知识问答与推荐团队 | 更新时间：2025年
+项目维护：前端技术知识问答与推荐团队 | 更新时间：2026年1月
 </div>
